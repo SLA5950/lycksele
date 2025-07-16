@@ -2,127 +2,249 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Arbetstid Visualisering</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Arbetspass & Vilotid</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #000;
-      color: #fff;
-      margin: 0;
-      padding: 1em;
-    }
-    h1 {
+      background: #111;
+      color: #eee;
+      font-family: sans-serif;
       text-align: center;
+      margin: 0; padding: 10px;
+      font-size: 16px;
     }
-    div {
+    div.controls {
+      max-width: 320px;
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      max-width: 320px;
-      margin: auto;
     }
     input, button {
       padding: 6px;
       font-size: 0.9em;
+      width: 100%;
+      box-sizing: border-box;
     }
     canvas {
       display: block;
       width: 100%;
       height: 40vh;
-      background-color: #111;
-      margin-top: 1em;
+      max-height: 260px;
+      background: #222;
+      margin: 10px auto;
       touch-action: manipulation;
+      border: 1px solid #444;
+    }
+    #status {
+      font-weight: bold;
+      margin: 5px auto;
     }
   </style>
 </head>
 <body>
-  <h1>Visualisering av arbetstid</h1>
-  <div>
+  <div class="controls">
     <input type="datetime-local" id="start" />
     <input type="datetime-local" id="slut" />
-    <button onclick="laggTillArbetspass()">Lägg till arbetspass</button>
+    <button onclick="läggTillEllerUppdateraPass()">Lägg till / Uppdatera pass</button>
+    <button onclick="rensaInmatning()">Rensa</button>
+    <button onclick="taBortMarkerat()">Ta bort markerat pass</button>
   </div>
   <canvas id="canvas"></canvas>
+  <div id="status"></div>
 
   <script>
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-
-    let arbetspass = [];
+    let arbetspass = [], redigerarIndex = -1, passPositions = [];
 
     function skalaCanvas() {
       canvas.width = canvas.clientWidth;
       canvas.height = Math.max(200, window.innerHeight * 0.4);
     }
 
-    function laggTillArbetspass() {
-      const start = new Date(document.getElementById("start").value);
-      const slut = new Date(document.getElementById("slut").value);
-      if (isNaN(start) || isNaN(slut) || slut <= start) return;
-      arbetspass.push({ start, slut });
+    window.addEventListener("resize", scheduleRita);
+    window.addEventListener("orientationchange", scheduleRita);
+
+    function laggTillEllerUppdateraPass() {
+      const s = document.getElementById("start").value;
+      const e = document.getElementById("slut").value;
+      if (!s || !e) { alert("Fyll i både start och sluttid"); return; }
+      const start = new Date(s), slut = new Date(e);
+      if (slut <= start) { alert("Sluttid måste vara efter starttid"); return; }
+      if (redigerarIndex >= 0) {
+        arbetspass[redigerarIndex] = { start, slut };
+      } else {
+        arbetspass.push({ start, slut });
+      }
+      rensaInmatning();
       rita();
+    }
+
+    function rensaInmatning() {
+      document.getElementById("start").value = "";
+      document.getElementById("slut").value = "";
+      redigerarIndex = -1;
+    }
+
+    function taBortMarkerat() {
+      if (redigerarIndex >= 0) {
+        arbetspass.splice(redigerarIndex, 1);
+        rensaInmatning();
+        rita();
+      }
+    }
+
+    function nollställTid(d) {
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+
+    function format(ms) {
+      const h = Math.floor(ms / 3600000);
+      const m = Math.round((ms % 3600000) / 60000);
+      return `${h}h ${m}min`;
     }
 
     function rita() {
       skalaCanvas();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const nu = new Date();
-      const dTid = new Date(nu.getFullYear(), nu.getMonth(), nu.getDate());
-      const dMinus1Tid = new Date(dTid.getTime() - 86400000);
-      const dPlus1Tid = new Date(dTid.getTime() + 86400000);
-      const pxPerMs = canvas.width / (24 * 3600 * 1000);
-      const radHojd = canvas.height / 3;
+      const now = new Date();
+      const d0 = nollställTid(now);
+      const d24 = new Date(d0.getTime() - 24*3600*1000);
+      const pxPerMs = canvas.width / (24*3600*1000);
+      passPositions = [];
 
-      function ritaLinjal(startTid, y) {
-        ctx.strokeStyle = "#888";
-        ctx.lineWidth = 1;
-        for (let h = 0; h <= 24; h++) {
-          const tid = new Date(startTid.getTime() + h * 3600 * 1000);
-          const x = (tid - dMinus1Tid) * pxPerMs;
+      const linjaler = [
+        { label: `${(d24.getMonth()+1).toString().padStart(2,"0")}${d24.getDate().toString().padStart(2,"0")}`, start: d24, y: canvas.height/3 - 20 },
+        { label: `${(d0.getMonth()+1).toString().padStart(2,"0")}${d0.getDate().toString().padStart(2,"0")}`, start: d0, y: 2*canvas.height/3 - 20 }
+      ];
+
+      ctx.font = "12px monospace"; ctx.textBaseline = "middle";
+
+      linjaler.forEach(({ label, start, y }) => {
+        ctx.fillStyle = "#333";
+        ctx.fillRect(0, y-20, canvas.width, 40);
+        ctx.strokeStyle = "#666";
+        ctx.fillStyle = "#aaa";
+        for (let h=0; h<=24; h++) {
+          const x = h/24*canvas.width;
           ctx.beginPath();
-          ctx.moveTo(x, y);
-          ctx.lineTo(x, y + radHojd);
+          ctx.moveTo(x, y-20);
+          ctx.lineTo(x, y+20);
           ctx.stroke();
-          ctx.fillStyle = "#ccc";
-          ctx.fillText(h.toString().padStart(2, "0"), x + 2, y + 10);
+          ctx.fillText(h.toString().padStart(2,"0"), x+2, y-10);
         }
-        ctx.strokeStyle = "#444";
-        ctx.strokeRect(0, y, canvas.width, radHojd);
+        ctx.fillStyle = "#fff";
+        ctx.fillText(label, 5, y-30);
+      });
+
+      const sorter = [...arbetspass].sort((a,b) => a.start - b.start);
+      const d24Ms = d24.getTime();
+
+      // Rita pass-segment
+      sorter.forEach((p,i) => {
+        linjaler.forEach(({ start, y }) => {
+          const linStart = start.getTime(), linEnd = linStart + 24*3600*1000;
+          const segs = [];
+          if (p.start < d24Ms && p.slut > d24Ms) {
+            segs.push({ from: p.start.getTime(), to: d24Ms, färg: "#666" });
+            segs.push({ from: d24Ms, to: p.slut.getTime(), färg: "lime" });
+          } else {
+            const färg = p.slut.getTime() <= d24Ms ? "gray" : "lime";
+            segs.push({ from: p.start.getTime(), to: p.slut.getTime(), färg });
+          }
+          segs.forEach(seg => {
+            const rs = Math.max(seg.from, linStart), re = Math.min(seg.to, linEnd);
+            if (re>rs) {
+              const x = (rs - linStart)*pxPerMs;
+              const w = (re - rs)*pxPerMs;
+              ctx.fillStyle = seg.färg;
+              ctx.fillRect(x, y-10, w, 20);
+              if (seg.färg === "lime")
+                passPositions.push({ index: i, xStart: x, yStart: y-10, bredd: w, höjd:20 });
+            }
+          });
+        });
+      });
+
+      // Rita vilor
+      const vilor = [];
+      for (let i=0; i<sorter.length-1; i++) {
+        const e=sorter[i].slut.getTime(), ns=sorter[i+1].start.getTime();
+        if (ns>e) vilor.push({ start: new Date(e), slut: new Date(ns) });
       }
-
-      // Rita linjaler
-      ritaLinjal(dMinus1Tid, 0);
-      ritaLinjal(dTid, radHojd);
-      ritaLinjal(dPlus1Tid, 2 * radHojd);
-
-      // Rita arbetspass
-      for (let pass of arbetspass) {
-        const startX = (pass.start - dMinus1Tid) * pxPerMs;
-        const slutX = (pass.slut - dMinus1Tid) * pxPerMs;
-        const y = pass.start < dTid ? (pass.slut > dTid ? 0 : 0) :
-                  pass.start < dPlus1Tid ? radHojd : 2 * radHojd;
-
-        ctx.fillStyle = "#0f0";
-        ctx.fillRect(startX, y + 15, slutX - startX, radHojd - 30);
+      if (sorter.length>0 && now>sorter[sorter.length-1].slut) {
+        vilor.push({ start: sorter[sorter.length-1].slut, slut: now });
       }
+      vilor.forEach(v => {
+        const vt = v.slut - v.start;
+        let färg="#88f", höjd=10;
+        if (vt>=8*3600*1000){ färg="yellow"; }
+        else if (vt>=4*3600*1000){ färg="blue"; }
+        else if (vt<2*3600*1000){ färg="lime"; höjd=4; }
+        linjaler.forEach(({ start, y }) => {
+          const ls=start.getTime(), le=ls+24*3600*1000;
+          const rs=Math.max(v.start.getTime(), ls), re=Math.min(v.slut.getTime(), le);
+          if (re>rs) {
+            const x=(rs-ls)*pxPerMs, w=(re-rs)*pxPerMs;
+            ctx.fillStyle=färg;
+            ctx.fillRect(x, y - höjd/2, w, höjd);
+          }
+        });
+      });
 
       // Rita nu-linje
-      const nuX = (nu - dMinus1Tid) * pxPerMs;
-      ctx.strokeStyle = "red";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(nuX, 0);
-      ctx.lineTo(nuX, canvas.height);
-      ctx.stroke();
+      const xNow = (now.getTime() - d0.getTime()) * pxPerMs;
+      ctx.strokeStyle="red"; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(xNow,0); ctx.lineTo(xNow, canvas.height); ctx.stroke();
+
+      // Beräkna status
+      let totalA=0, totalV=0;
+      const gräns = now.getTime() - 24*3600*1000;
+      let startIdx=0;
+      vilor.forEach((v,i)=>{
+        const vt = v.slut - v.start;
+        if (vt>=8*3600*1000) {
+          const fi = sorter.findIndex(p=>p.start > v.slut);
+          startIdx = fi>=0? fi : sort
+er.length;
+        }
+      });
+      const relevanta = sorter.slice(startIdx).filter(p=>p.slut.getTime()>gräns);
+      relevanta.forEach(p=> {
+        const s=Math.max(p.start.getTime(), gräns), e=Math.min(p.slut.getTime(), now.getTime());
+        if (e>s) totalA += e-s;
+      });
+      vilor.slice(startIdx).forEach(v=>{
+        const s=Math.max(v.start.getTime(), gräns), e=Math.min(v.slut.getTime(), now.getTime());
+        const tid = e-s;
+        if (tid>0) totalA += (tid<2*3600*1000 ? tid : 0), totalV += (tid>=2*3600*1000 ? tid : 0);
+      });
+      document.getElementById("status").textContent = 
+        `Arbetstid (D‑24→nu): ${format(totalA)} | Vilotid: ${format(totalV)}`;
     }
 
-    window.addEventListener("resize", rita);
-    window.addEventListener("orientationchange", rita);
+    function scheduleRita(){
+      requestAnimationFrame(() => setTimeout(rita, 100));
+    }
 
-    // Uppdatera var 30:e sekund
-    setInterval(rita, 30000);
+    canvas.addEventListener("click", e => {
+      const r = canvas.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      const t = passPositions.find(p => x>=p.xStart && x<=p.xStart+p.bredd &&
+                                         y>=p.yStart && y<=p.yStart+p.höjd);
+      if (t) {
+        const p = arbetspass[t.index];
+        document.getElementById("start").value = new Date(p.start.getTime() - p.start.getTimezoneOffset()*60000)
+          .toISOString().slice(0,16);
+        document.getElementById("slut").value = new Date(p.slut.getTime() - p.slut.getTimezoneOffset()*60000)
+          .toISOString().slice(0,16);
+        redigerarIndex = t.index;
+      }
+    });
+
+    setInterval(rita, 60000);
     rita();
   </script>
 </body>
