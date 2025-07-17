@@ -36,6 +36,7 @@
       width: 100%;
       max-width: 1000px;
       height: auto;
+      touch-action: manipulation;
     }
 
     #status {
@@ -212,7 +213,6 @@ function rita() {
     });
   });
 
-  // Beräkna viloperioder
   const vilor = [];
   for (let i = 0; i < sorter.length - 1; i++) {
     const end = sorter[i].slut.getTime();
@@ -252,7 +252,6 @@ function rita() {
     });
   });
 
-  // Röd linje: nu
   const xNow = (now.getTime() - d0.getTime()) * pxPerMs;
   ctx.strokeStyle = "red";
   ctx.lineWidth = 2;
@@ -261,7 +260,6 @@ function rita() {
   ctx.lineTo(xNow, 220);
   ctx.stroke();
 
-  // Beräkna summerad arbetstid och vilotid
   const tStart = now.getTime() - 24 * 3600 * 1000;
   const tSlut = now.getTime();
 
@@ -317,7 +315,8 @@ function uppdatera() {
   setTimeout(uppdatera, 60 * 1000);
 }
 
-canvas.addEventListener("click", e => {
+// === Enhetlig hantering för klick/touch ===
+canvas.addEventListener("pointerdown", e => {
   const rect = canvas.getBoundingClientRect();
   const klickX = e.clientX - rect.left;
   const klickY = e.clientY - rect.top;
@@ -346,6 +345,5 @@ canvas.addEventListener("click", e => {
 
 uppdatera();
 </script>
-
 </body>
 </html>
