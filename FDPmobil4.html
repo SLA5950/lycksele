@@ -2,8 +2,6 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-
   <title>FDP</title>
   <style>
     body {
@@ -14,12 +12,13 @@
       margin: 20px;
     }
     canvas {
-      border: 1px solid #444;
-      background: #222;
-      margin: 10px auto;
-      display: block;
-      cursor: pointer;
-    }
+  border: 1px solid #444;
+  background: #222;
+  margin: 10px auto;
+  display: block;
+  cursor: pointer;
+ }
+
     input, button {
       font-size: 1em;
       margin: 0 5px;
@@ -145,16 +144,12 @@ function formatDatum(date) {
 }
 
 // ==== RITA CANVAS ====
-// ... (här är funktionen `rita()` – oförändrad från din version)
-
-
-// ==== RITA CANVAS ====
 function rita() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const now = new Date();
   const d0 = nollställTid(now);
   const d24 = new Date(d0.getTime() - 24 * 3600 * 1000);
-  const pxPerMs = canvas.width / (24 * 3600 * 1000);
+  const pxPerMs = canvas.clientWidth / (24 * 3600 * 1000);
   passPositions = [];
 
   const linjaler = [
@@ -162,7 +157,7 @@ function rita() {
     { label: formatDatum(d0), start: d0, y: 160 }
   ];
 
-  ctx.font = "12px monospace";
+  ctx.font = "15px monospace";
   ctx.textBaseline = "middle";
 
   linjaler.forEach(({ label, start, y }) => {
@@ -328,9 +323,10 @@ function rita() {
 
 // ==== AUTOMATISK UPPDATERING ====
 function uppdatera() {
-  rita();
+   rita();
   setTimeout(uppdatera, 60 * 1000);
 }
+
 
 // ==== MARKERING VID KLICK ====
 canvas.addEventListener("click", e => {
