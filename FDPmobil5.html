@@ -38,11 +38,20 @@
 <body>
 
 <div>
-  Starttid: <input type="datetime-local" id="start" />
-  Sluttid: <input type="datetime-local" id="slut" />
+
+<label>
+
+<div>
+  <div style="white-space: nowrap; display: inline-block; margin-right: 1em;">
+    Starttid: <input type="datetime-local" id="start" />
+  </div>
+  <div style="white-space: nowrap; display: inline-block; margin-right: 1em;">
+    Sluttid: <input type="datetime-local" id="slut" />
+  </div>
   <button onclick="läggTillEllerUppdateraPass()">Add/Uppdatera</button>
   <button id="btnTaBort" onclick="taBortPass()" disabled>Delete pass</button>
 </div>
+
 
 <canvas id="canvas"></canvas>
 
@@ -144,7 +153,7 @@ function formatDatum(date) {
 
 function storleksanpassaCanvas() {
   const bredd = canvas.clientWidth;
-  const höjd = 320;
+  const höjd = 220;
   canvas.width = bredd;
   canvas.height = höjd;
 }
@@ -162,7 +171,7 @@ function rita() {
     { label: formatDatum(d0), start: d0, y: 160 }
   ];
 
-  ctx.font = "12px monospace";
+  ctx.font = "20px monospace";
   ctx.textBaseline = "middle";
 
   linjaler.forEach(({ label, start, y }) => {
@@ -171,17 +180,24 @@ function rita() {
 
     ctx.strokeStyle = "#666";
     ctx.fillStyle = "#aaa";
-    for (let h = 0; h <= 24; h++) {
-      const x = (h / 24) * canvas.width;
-      ctx.beginPath();
-      ctx.moveTo(x, y - 20);
-      ctx.lineTo(x, y + 20);
-      ctx.stroke();
-      ctx.fillText(h.toString().padStart(2, "0"), x + 2, y - 10);
-    }
+   for (let h = 0; h <= 24; h++) {
+  const x = (h / 24) * canvas.width;
+  ctx.beginPath();
+  ctx.moveTo(x, y - 20);
+  ctx.lineTo(x, y + 20);
+  ctx.stroke();
+
+ if (h % 2 === 0) {
+  const text = h.toString().padStart(2, "0");
+  const textWidth = ctx.measureText(text).width;
+  ctx.fillText(text, x - textWidth / 2, y - 30);
+}
+
+}
+
 
     ctx.fillStyle = "#fff";
-    ctx.fillText(label, 5, y - 30);
+    ctx.fillText(label, 5, y - 45);
   });
 
   const sorter = [...arbetspass].sort((a, b) => a.start - b.start);
@@ -218,7 +234,7 @@ function rita() {
         }
 
         if (i === markeratPassIndex) {
-          ctx.strokeStyle = "yellow";
+          ctx.strokeStyle = "red";
           ctx.lineWidth = 2;
           ctx.strokeRect(x, y - 10, w, 20);
         }
