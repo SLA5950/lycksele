@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+
+    }
+
+    .tabs {
+      position: sticky;
+      top: 0;
+      background-color: black;
+      display: flex;
+      justify-content: space-around;
+      padding: 3px 0;
+      border-bottom: 1px solid #ccc;
+      z-index: 1000;
+    }
+
+    .tab {
+      padding: 5px 10px;
+      cursor: pointer;
+      font-weight: bold;
+color: white; /* Vit text på inaktiva flikar */
+background-color: black; /* Svart bakgrund på alla flikar */
+  transition: color 0.3s;
+    }
+
+    .tab:hover {
+      background-color: black;
+    }
+
+    .tab.active {
+  color: #39ff14; /* Neon-grön färg på aktiv flik */
+      background-color: black;
+
+    }
+
+    .content {
+      display: none;
+      padding: 10px;
+    }
+
+    .content.active {
+      display: block;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px 5px;
+    }
+
+    .container img,
+    .container iframe {
+      width: 100%;
+      height: auto;
+      cursor: pointer;
+    }
+
+    .container p {
+      margin: 1px 0;
+    }
+
+    .fullscreen-img {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      z-index: 9999;
+      background-color: black;
+    }
+  </style>
+
+  <script>
+    function toggleFullscreenImage(event) {
+      const img = event.target;
+      if (!document.fullscreenElement) {
+        img.classList.add('fullscreen-img');
+        img.requestFullscreen();
+      } else {
+        document.exitFullscreen().then(() => {
+          const fsImg = document.querySelector('.fullscreen-img');
+          if (fsImg) fsImg.classList.remove('fullscreen-img');
+        });
+      }
+    }
+
+    function refreshImages() {
+      const images = document.querySelectorAll('.container img');
+      images.forEach(img => {
+        const src = img.src.split('?')[0];
+        img.src = `${src}?dummy=${new Date().getTime()}`;
+      });
+    }
+    setInterval(refreshImages, 10000);
+
+    function showTab(index) {
+      const tabs = document.querySelectorAll('.tab');
+      const contents = document.querySelectorAll('.content');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      contents.forEach(content => content.classList.remove('active'));
+      tabs[index].classList.add('active');
+      contents[index].classList.add('active');
+    }
+
+    window.onload = () => showTab(0);
+  </script>
+</head>
+
+<body>
+  <div class="tabs">
+    <div class="tab active" onclick="showTab(0)">Webbkameror</div>
+    <div class="tab" onclick="showTab(1)">Karta kameror</div>
+    <div class="tab" onclick="showTab(2)">Referensbilder</div>
+    <a href="https://hemsse-my.sharepoint.com/:x:/r/personal/ove_lundstrom_hems_se/Documents/%C3%96ppet%20tider%20flygplatser.xlsx?d=w169a2fd0cdd7436eb2e5a8280305d848&csf=1&web=1&e=fmwGx6"
+       target="_blank"
+       style="padding: 5px 10px; font-weight: bold; text-decoration: none; color: white;">
+      Öppettider i egen flik
+    </a>
+  </div>
+
+  <!-- Flik 1 -->
+  <div class="content active">
+    <div class="container">
+      <div>
+            <img src="http://185.102.215.186/current/35501copyright!!/hemavan_7_live.jpg?counter=1750152302465" alt="Live Camera Feed" onclick="toggleFullscreenImage(event)">
+            <p>Hemavan toppstugan</p>
+        </div>
+        <div>
+            <img src="http://185.102.215.186/current/35501copyright!!/hemavan_1_live.jpg?counter=1750152412740" alt="Live Camera Feed" onclick="toggleFullscreenImage(event)">
+            <p>Hemavan</p>
+        </div>
+        <div>
+            <img src="https://www.storuman.se/webcams/tarnaby/tarnaby.jpg" alt="Webbkamera - Tärnaby" onclick="toggleFullscreenImage(event)">
+            <p>Tärnaby</p>
+        </div>
+        <div>
+            <img src="http://www.storuman.se/webcams/storuman/storuman.jpg" alt="Webbkamera - Torget i Storuman" onclick="toggleFullscreenImage(event)">
+            <p>Storuman</p>
+        </div>
+        <div>
+            <img src="https://webcam.vaia.se/image-1280x720.jpg?dummy=1748539668617" alt="Webcam Bild" onclick="toggleFullscreenImage(event)">
+            <p>Sorsele</p>
+        </div>
+        <div>
+            <img src="http://185.102.215.186/current/35501copyright!!/vilhelmina_3_live.jpg?counter=1750152454292" alt="Live Camera Feed" onclick="toggleFullscreenImage(event)">
+            <p>Vilhelmina</p>
+        </div>
+        <div>
+            <img src="http://185.102.215.186/current/35501copyright!!/vilhelmina_2_live.jpg?counter=1750152484429" alt="Live Camera Feed" onclick="toggleFullscreenImage(event)">
+            <p>Vilhelmina</p>
+        </div>
+        <div>
+            <img src="http://194.103.218.16/axis-cgi/mjpg/video.cgi?resolution=480x360&clock=1&date=1&text=1&textstring=Hornavan%20-%20Arjeplog&dummy=1615277588765" alt="Live Camera Feed" onclick="toggleFullscreenImage(event)">
+            <p>Hornavan Arjeplog</p>
+        </div>
+        <div>
+            <img src="https://storgrova.moln8.com/hotelliften.mjpg" alt="Hotelliften" onclick="toggleFullscreenImage(event)">
+            <p>Hotelliften Kittelfjäll</p>
+        </div>
+        <div>
+            <img src="https://storgrova.moln8.com/borkan.mjpg" alt="Borkan" onclick="toggleFullscreenImage(event)">
+            <p>Borkan Kittelfjäll</p>
+        </div>
+       
+<div>
+            <img src="https://www.airviro.com/dauna//webcam/latestimg.jpg?2505302151" alt="Daunafjället" onclick="toggleFullscreenImage(event)">
+            <p>Daunafjället, Kittelfjäll</p>
+        </div>
+<div>
+            <img src="https://www.airviro.com/borga//webcam/latestimg.jpg?2506010721" alt="Borgafjäll" onclick="toggleFullscreenImage(event)">
+            <p>Borgahällen, Borgafjäll</p>
+        </div>
+<div>
+            <img src="https://api.trafikinfo.trafikverket.se/v2/Images/data/road.infrastructure.camera/RoadConditionCamera_39635646.jpg?type=fullsize&maxage=140" alt="Saxnäs" onclick="toggleFullscreenImage(event)">
+            <p>Saxnäs</p>
+        </div>
+<div>
+            <img src="https://api.trafikinfo.trafikverket.se/v2/Images/data/road.infrastructure.camera/RoadConditionCamera_39635496.jpg" alt="Boliden" onclick="toggleFullscreenImage(event)">
+            <p>Bastunäs, Boliden</p>
+        </div>
+<div>
+            <img src="https://liveevents.nu/hsb/hsb_2_1280.jpg" alt="SKelleefteå" onclick="toggleFullscreenImage(event)">
+            <p>Skellefteå Uppdatering var 5:e minut upp</p>
+        </div>
+<div>
+            <img src="http://www.fjallflygarna.se/webcam/fjallflyg_1_640.jpg?counter=1748678684985" alt="Adolfström" onclick="toggleFullscreenImage(event)">
+            <p>Adolfström,Tjäktsa</p>
+        </div>
+<div>
+        <iframe src="https://www.youtube.com/embed/_1HmQ8bCVAw" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="width: 100%; height: 100%;"></iframe>
+            <p>Ammarnäs</p>
+        </div>
+<div>
+            <img src="http://www.samuelssons.org/camp/nasberg.jpg" alt="Ammarnäs" onclick="toggleFullscreenImage(event)">
+            <p>Ammarnäs skidbacken</p>
+        </div>
+
+<div>
+            <img src="https://bygdsiljumsbacken.se/topp.php" alt="Bygdsiljum" onclick="toggleFullscreenImage(event)">
+            <p>Bygdsiljum backen</p>
+        </div>
+ <div>
+        <iframe src="https://www.youtube.com/embed/Dnw_l8f9rUc?mute=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="width: 100%; height: 100%;"></iframe>
+            <p>Arvidsjaur</p>
+        </div>
+    </div>
+  </div>
+ 
+  <!-- Flik 2 -->
+  <div class="content">
+    <div class="container">
+      <div style="grid-column: span 2; display: flex; justify-content: center; align-items: center; flex-direction: column;">
+        <img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/Kameraplaceringar.png?csf=1&web=1&e=Ye59hW" alt="Kameraplacering" onclick="toggleFullscreenImage(event)" style="width: 60%;">
+        <p>Kameraplacering</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flik 3 -->
+  <div class="content">
+    <div class="container">
+      <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Hemavan%20topp.png?csf=1&web=1&e=rYyRFn" alt="1" onclick="toggleFullscreenImage(event)"></div>
+      <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Hemavan%20.png?csf=1&web=1&e=fYHqGp" alt="2" onclick="toggleFullscreenImage(event)"></div>
+      <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/T%C3%A4rnaby.png?csf=1&web=1&e=rDwgjG" alt="3" onclick="toggleFullscreenImage(event)"></div>
+      <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Storuman.png?csf=1&web=1&e=rh4ys1" alt="4" onclick="toggleFullscreenImage(event)"></div>
+      <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Sorsele.png?csf=1&web=1&e=CFPZOi" alt="5" onclick="toggleFullscreenImage(event)"></div>
+      <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Vilhelmina%20kyrka.png?csf=1&web=1&e=Wf4D3v" alt="6" onclick="toggleFullscreenImage(event)"></div>
+      <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Vilhelmina%20.png?csf=1&web=1&e=Yv00Jk" alt="7" onclick="toggleFullscreenImage(event)"></div>
+      <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Arjeplog%20hornavan.png?csf=1&web=1&e=DB1rWl" alt="8" onclick="toggleFullscreenImage(event)"></div>
+      <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Kittefj%C3%A4ll%20liften.png?csf=1&web=1&e=rYDTq9" alt="9" onclick="toggleFullscreenImage(event)"></div>
+      <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Kittelfj%C3%A4ll%20Borkan.png?csf=1&web=1&e=yfMexB" alt="10" onclick="toggleFullscreenImage(event)"></div>
+ <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Daunafj%C3%A4ll%20-%20Kittefj%C3%A4ll.png?csf=1&web=1&e=KqqLPw" alt="11" onclick="toggleFullscreenImage(event)"></div>
+ <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Borgah%C3%A4llan.png?csf=1&web=1&e=DMaPS4" alt="12" onclick="toggleFullscreenImage(event)"></div>
+ <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Saxn%C3%A4s.png?csf=1&web=1&e=ZLlh7C" alt="13" onclick="toggleFullscreenImage(event)"></div>
+ <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Bastun%C3%A4s.png?csf=1&web=1&e=mbKK3C" alt="14" onclick="toggleFullscreenImage(event)"></div>
+ <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Skellefte%C3%A5.png?csf=1&web=1&e=yfBLwy" alt="15" onclick="toggleFullscreenImage(event)"></div>
+ <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Adolfstr%C3%B6m.png?csf=1&web=1&e=SG92vc" alt="16" onclick="toggleFullscreenImage(event)"></div>
+ <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Ammarn%C3%A4s%20youtube.png?csf=1&web=1&e=Q47ePx" alt="17" onclick="toggleFullscreenImage(event)"></div>
+ <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Ammarn%C3%A4s.png?csf=1&web=1&e=OWSg5X" alt="18" onclick="toggleFullscreenImage(event)"></div>
+ <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Bygdsiljum.png?csf=1&web=1&e=l8qeeU" alt="19" onclick="toggleFullscreenImage(event)"></div>
+ <div><img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/referensbilder/Arvidsjaur.png?csf=1&web=1&e=PbXjfH" alt="18" onclick="toggleFullscreenImage(event)"></div>
+    </div>
+  </div>
+</body>
+</html>

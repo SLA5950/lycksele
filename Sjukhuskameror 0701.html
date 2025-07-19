@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kameraview med METAR</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      height: 100%;
+      overflow: hidden;
+      font-family: sans-serif;
+      color: white;
+    }
+
+    .tabs {
+      display: flex;
+      background: #222;
+      height: 24px;
+      line-height: 24px;
+    }
+
+    .tab {
+      padding: 0 1rem;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 2px solid transparent;
+      font-size: 1.2rem;
+      height: 24px;
+      display: flex;
+      align-items: center;
+    }
+
+    .tab.active {
+      border-bottom: 2px solid #0f0;
+      color: #39ff14;
+      font-weight: bold;
+    }
+
+    .tab-content {
+      display: none;
+      height: calc(100vh - 24px);
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      width: 100vw;
+      height: 100%;
+    }
+
+    .cam-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .cam-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .fullscreen {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 9999 !important;
+      object-fit: contain !important;
+      background: #000;
+    }
+
+    .overlay {
+      position: absolute;
+      bottom: 5px;
+      left: 5px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 1.5rem;
+      max-width: 95%;
+      white-space: pre-wrap;
+      z-index: 1;
+    }
+
+    .taf-overlay {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-size: 1.5rem;
+      z-index: 10000;
+      white-space: pre-wrap;
+      max-width: 90vw;
+    }
+
+    .reference-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      width: 100vw;
+      height: 100%;
+    }
+
+    .reference-container {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .reference-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="tabs">
+    <div class="tab active" data-tab="webkameror">Webkameror</div>
+    <div class="tab" data-tab="referensbilder">Referensbilder</div>
+  </div>
+
+  <div class="tab-content active" id="webkameror">
+    <div class="grid">
+      <div class="cam-container" data-taf="ESNU">
+        <img data-base="http://cctv-nus.vll.se/axis-cgi/jpg/image.cgi?camera=1" alt="Kamera NUS" />
+        <div class="overlay" id="metar-esnu">Hämtar METAR (ESNU)...</div>
+      </div>
+      <div class="cam-container" data-taf="ESNS">
+        <img data-base="http://cctv-skelas.vll.se/axis-cgi/jpg/image.cgi?camera=1" alt="Kamera Skelas" />
+        <div class="overlay" id="metar-esns">Hämtar METAR (ESNS)...</div>
+      </div>
+      <div class="cam-container">
+        <img data-base="http://cctv-lselas.vll.se/axis-cgi/jpg/image.cgi?camera=1" alt="Kamera Lselas" />
+        <div class="overlay" id="metar-esnl">Hämtar METAR (ESNL)...</div>
+      </div>
+      <div class="cam-container">
+        <img data-base="http://cctv-lseflp.vll.se/axis-cgi/jpg/image.cgi?camera=1" alt="Kamera LSEFLP" />
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="referensbilder">
+    <div class="reference-grid">
+      <div class="reference-container">
+        <img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/Ume%C3%A5.png?csf=1&web=1&e=Y3tBkw" alt="Referensbild 1" />
+      </div>
+      <div class="reference-container">
+        <img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/Skellefte%C3%A5.png?csf=1&web=1&e=H533ma" alt="Referensbild 2" />
+      </div>
+      <div class="reference-container">
+        <img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/Lycksele%20Norr.png?csf=1&web=1&e=BxY2Ku" alt="Referensbild 3" />
+      </div>
+      <div class="reference-container">
+        <img src="https://hemsse-my.sharepoint.com/:i:/r/personal/ove_lundstrom_hems_se/Documents/Webkameror/Lycksele%20Flpl.png?csf=1&web=1&e=b6HZ1M" alt="Referensbild 4" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_KEY = "hdcP_CPXBTn6zF8P54bmyU-7Xv_82BPqSnB3IBCITEE";
+    const airports = [
+      { code: "ESNU", elementId: "metar-esnu" },
+      { code: "ESNS", elementId: "metar-esns" },
+      { code: "ESNL", elementId: "metar-esnl" }
+    ];
+    let currentTafCode = null;
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.cam-container, .reference-container').forEach(container => {
+      const img = container.querySelector('img');
+      container.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (img.classList.contains('fullscreen')) {
+          img.classList.remove('fullscreen');
+          removeTafOverlay();
+          currentTafCode = null;
+          return;
+        }
+        document.querySelectorAll('img').forEach(i => i.classList.remove('fullscreen'));
+        removeTafOverlay();
+        img.classList.add('fullscreen');
+        const tafCode = container.dataset.taf;
+        if (tafCode) {
+          currentTafCode = tafCode;
+          fetchTafAndShow(tafCode);
+        }
+      });
+    });
+
+    document.body.addEventListener('click', () => {
+      document.querySelectorAll('img').forEach(i => i.classList.remove('fullscreen'));
+      removeTafOverlay();
+      currentTafCode = null;
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('img').forEach(i => i.classList.remove('fullscreen'));
+        removeTafOverlay();
+        currentTafCode = null;
+      }
+    });
+
+    function removeTafOverlay() {
+      const existing = document.getElementById('taf-overlay');
+      if (existing) existing.remove();
+    }
+
+    async function fetchTafAndShow(code) {
+      const url = `https://avwx.rest/api/taf/${code}?format=json&_=${Date.now()}`;
+      try {
+        const req = new Request(url, {
+          method: "GET",
+          headers: { Authorization: API_KEY },
+          cache: "no-store"
+        });
+        const response = await fetch(req);
+        const data = await response.json();
+        const taf = data.raw || 'Ingen TAF-data';
+
+        const div = document.createElement('div');
+        div.id = 'taf-overlay';
+        div.className = 'taf-overlay';
+        div.textContent = taf;
+        document.body.appendChild(div);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function fetchMetar(code, elementId) {
+      const url = `https://avwx.rest/api/metar/${code}?format=json&_=${Date.now()}`;
+      const overlay = document.getElementById(elementId);
+      overlay.textContent = `Hämtar METAR (${code})...`;
+
+      try {
+        const req = new Request(url, {
+          method: "GET",
+          headers: { Authorization: API_KEY },
+          cache: "no-store"
+        });
+        const response = await fetch(req);
+        const data = await response.json();
+
+        const raw = data.raw || 'Ingen data';
+        const fetchedAt = new Date().toLocaleTimeString('sv-SE');
+        overlay.textContent = `${raw}\nUppdaterad: ${fetchedAt}`;
+        console.log(`[${fetchedAt}] METAR ${code}:`, raw);
+      } catch (err) {
+        overlay.textContent = `Fel vid hämtning av METAR (${code})`;
+        console.error(err);
+      }
+    }
+
+    function updateAllMetars() {
+      airports.forEach(a => fetchMetar(a.code, a.elementId));
+    }
+
+    function scheduleUpdatesEveryMinute() {
+      updateAllMetars();
+      setInterval(updateAllMetars, 300 * 1000);
+    }
+
+    function updateCameraImages() {
+      const cameraImages = document.querySelectorAll('#webkameror .cam-container img');
+      cameraImages.forEach(img => {
+        const base = img.dataset.base;
+        const timestamp = Date.now();
+        img.src = `${base}&t=${timestamp}`;
+      });
+    }
+
+    function scheduleCameraUpdates() {
+      updateCameraImages();
+      setInterval(updateCameraImages, 60 * 1000);
+    }
+
+    scheduleUpdatesEveryMinute();
+    scheduleCameraUpdates();
+  </script>
+</body>
+</html>
