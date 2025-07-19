@@ -79,7 +79,7 @@ let redigerarIndex = -1;
 let passPositions = [];
 let markeratPassIndex = -1;
 
-const sparade = sessionStorage.getItem("arbetspass");
+const sparade = localStorage.getItem("arbetspass");
 if (sparade) {
   try {
     arbetspass = JSON.parse(sparade).map(p => ({
@@ -87,13 +87,10 @@ if (sparade) {
       slut: new Date(p.slut)
     }));
   } catch (e) {
-    console.warn("Fel vid inläsning av arbetspass från sessionStorage", e);
+    console.warn("Fel vid inläsning av arbetspass från localStorage", e);
   }
 }
 
-window.addEventListener("beforeunload", () => {
-  sessionStorage.removeItem("arbetspass");
-});
 
 function läggTillEllerUppdateraPass() {
   const s = document.getElementById("start").value;
@@ -116,7 +113,7 @@ function läggTillEllerUppdateraPass() {
     arbetspass.push({ start, slut });
   }
 
-  sessionStorage.setItem("arbetspass", JSON.stringify(arbetspass));
+  localStorage.setItem("arbetspass", JSON.stringify(arbetspass));
 
   rensaInmatning();
   markeratPassIndex = -1;
