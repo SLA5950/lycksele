@@ -56,6 +56,28 @@
 <canvas id="canvas"></canvas>
 
 <div id="status"></div>
+<div id="legend" style="margin-top: 10px; text-align: left; max-width: 1000px; margin-left: auto; margin-right: auto;">
+  <div style="display: flex; align-items: center; margin: 4px 0;">
+    <div style="width: 40px; height: 10px; background: #0f0; margin-right: 8px;"></div>
+    <span>Arbetstid</span>
+  </div>
+  <div style="display: flex; align-items: center; margin: 4px 0;">
+    <div style="width: 40px; height: 4px; background: #0f0; margin-right: 8px;"></div>
+    <span>&lt; 2h mellan arbetspass</span>
+  </div>
+  <div style="display: flex; align-items: center; margin: 4px 0;">
+    <div style="width: 40px; height: 6px; background: #88f; margin-right: 8px;"></div>
+    <span>Vila ≥ 2h och &lt; 4h</span>
+  </div>
+  <div style="display: flex; align-items: center; margin: 4px 0;">
+    <div style="width: 40px; height: 10px; background: #00f; margin-right: 8px;"></div>
+    <span>Vila ≥ 4h och &lt; 8h</span>
+  </div>
+  <div style="display: flex; align-items: center; margin: 4px 0;">
+    <div style="width: 40px; height: 10px; background: yellow; margin-right: 8px;"></div>
+    <span>Vila ≥ 8h</span>
+  </div>
+</div>
 
 <script>
 function localDatetimeString(date) {
@@ -289,18 +311,32 @@ function rita() {
   const tStart = now.getTime() - 24 * 3600 * 1000;
   const tSlut = now.getTime();
 
-  let startIndex = 0;
-  for (let i = 0; i < vilor.length; i++) {
-    const vilaTid = vilor[i].slut.getTime() - vilor[i].start.getTime();
-    if (vilaTid > 8 * 3600 * 1000 && vilor[i].slut.getTime() >= tStart) {
-      for (let j = 0; j < sorter.length; j++) {
-        if (sorter[j].start.getTime() >= vilor[i].slut.getTime()) {
-          startIndex = j;
-          break;
+    let startIndex = 0;
+
+  // Kolla om sista arbetspass slutade för ≥ 8h sedan
+  if (sorter.length > 0) {
+    const sistaSlut = sorter[sorter.length - 1].slut.getTime();
+    const vilaSedanSist = now.getTime() - sistaSlut;
+    if (vilaSedanSist >= 8 * 3600 * 1000) {
+      // Arbetstid ska nollställas, så vi sätter startIndex till sista + 1 (vilket blir utanför arrayen)
+      startIndex = sorter.length;
+    } else {
+      // Annars kontrollera om någon annan vila ≥8h efter D-24 finns
+      for (let i = 0; i < vilor.length; i++) {
+        const vilaTid = vilor[i].slut.getTime() - vilor[i].start.getTime();
+        if (vilaTid >= 8 * 3600 * 1000 && vilor[i].slut.getTime() >= tStart) {
+          for (let j = 0; j < sorter.length; j++) {
+            if (sorter[j].start.getTime() >= vilor[i].slut.getTime()) {
+              startIndex = j;
+              break;
+            }
+          }
+          break; // Hittat en giltig vila ≥8h, vi kan sluta leta
         }
       }
     }
   }
+
 
   let totalArbetstid = 0;
   let totalVilotid = 0;
