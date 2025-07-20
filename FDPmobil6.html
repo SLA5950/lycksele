@@ -289,18 +289,32 @@ function rita() {
   const tStart = now.getTime() - 24 * 3600 * 1000;
   const tSlut = now.getTime();
 
-  let startIndex = 0;
-  for (let i = 0; i < vilor.length; i++) {
-    const vilaTid = vilor[i].slut.getTime() - vilor[i].start.getTime();
-    if (vilaTid > 8 * 3600 * 1000 && vilor[i].slut.getTime() >= tStart) {
-      for (let j = 0; j < sorter.length; j++) {
-        if (sorter[j].start.getTime() >= vilor[i].slut.getTime()) {
-          startIndex = j;
-          break;
+    let startIndex = 0;
+
+  // Kolla om sista arbetspass slutade för ≥ 8h sedan
+  if (sorter.length > 0) {
+    const sistaSlut = sorter[sorter.length - 1].slut.getTime();
+    const vilaSedanSist = now.getTime() - sistaSlut;
+    if (vilaSedanSist >= 8 * 3600 * 1000) {
+      // Arbetstid ska nollställas, så vi sätter startIndex till sista + 1 (vilket blir utanför arrayen)
+      startIndex = sorter.length;
+    } else {
+      // Annars kontrollera om någon annan vila ≥8h efter D-24 finns
+      for (let i = 0; i < vilor.length; i++) {
+        const vilaTid = vilor[i].slut.getTime() - vilor[i].start.getTime();
+        if (vilaTid >= 8 * 3600 * 1000 && vilor[i].slut.getTime() >= tStart) {
+          for (let j = 0; j < sorter.length; j++) {
+            if (sorter[j].start.getTime() >= vilor[i].slut.getTime()) {
+              startIndex = j;
+              break;
+            }
+          }
+          break; // Hittat en giltig vila ≥8h, vi kan sluta leta
         }
       }
     }
   }
+
 
   let totalArbetstid = 0;
   let totalVilotid = 0;
