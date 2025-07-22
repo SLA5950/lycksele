@@ -33,14 +33,18 @@
       margin-top: 10px;
       font-weight: bold;
     }
-.knapp-grön {
-  background-color: #0a0;
-  color: #fff;
+button.knapp-grön {
+  background-color: #0a0 !important;
+  color: #fff !important;
+  border: none;
 }
-.knapp-röd {
-  background-color: #a00;
-  color: #fff;
+
+button.knapp-röd {
+  background-color: #a00 !important;
+  color: #fff !important;
+  border: none;
 }
+
 
   </style>
 </head>
@@ -61,6 +65,7 @@
   <button id="btnTaBort" onclick="taBortPass()" disabled>Delete pass</button>
   <button onclick="simuleraFDPMax()">Simulera FDP-max</button>
 <button id="btnStartStop" onclick="startaEllerStoppaPass()">Starta pass</button>
+
 </div>
 
 
@@ -111,6 +116,30 @@ let arbetspass = [];
 let redigerarIndex = -1;
 let passPositions = [];
 let markeratPassIndex = -1;
+let pågåendePass = null;
+
+// Välj knappen direkt
+const btnStartStop = document.getElementById("btnStartStop");
+
+// Kolla om det finns ett pågående pass i localStorage
+const pågåendeSparat = localStorage.getItem("pågåendePass");
+if (pågåendeSparat) {
+  try {
+    const obj = JSON.parse(pågåendeSparat);
+    if (obj && obj.start) {
+      pågåendePass = { start: new Date(obj.start) };
+      btnStartStop.textContent = "Stoppa pass";
+      btnStartStop.classList.add("knapp-grön");
+    } else {
+      btnStartStop.classList.add("knapp-röd");
+    }
+  } catch (e) {
+    console.warn("Fel vid inläsning av pågående pass från localStorage", e);
+    btnStartStop.classList.add("knapp-röd");
+  }
+} else {
+  btnStartStop.classList.add("knapp-röd");
+}
 
 const sparade = localStorage.getItem("arbetspass");
 if (sparade) {
@@ -123,7 +152,7 @@ if (sparade) {
     console.warn("Fel vid inläsning av arbetspass från localStorage", e);
   }
 }
-const pågåendeSparat = localStorage.getItem("pågåendePass");
+
 if (pågåendeSparat) {
   try {
     const obj = JSON.parse(pågåendeSparat);
@@ -308,8 +337,6 @@ function simuleraFDPMax() {
     "Simuleringen nådde inte 15h arbetstid inom 24h framåt.";
 }
 
-
-let pågåendePass = null;
 
 function startaEllerStoppaPass() {
   const nu = new Date();
