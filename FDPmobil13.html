@@ -349,15 +349,17 @@ function startaEllerStoppaPass() {
 
 
 // Om du vill visa det pågående passet på canvas i realtid:
-function ritaPågåendePass(pxPerMs, d24Time, linjaler) {
+function ritaPågåendePass(pxPerMs, d24Time, linjaler, now) {
+
   if (!pågåendePass) return;
 
-  const nu = new Date();
+ 
   linjaler.forEach(({ start, y }) => {
     const linStartMs = start.getTime();
     const linEndMs = linStartMs + 24 * 3600 * 1000;
     const passStart = pågåendePass.start.getTime();
-    const passEnd = nu.getTime();
+    const passEnd = now.getTime();
+
 
     const segmenter = [];
 
@@ -513,7 +515,8 @@ if (pågåendePass) {
     });
   });
 
-ritaPågåendePass(pxPerMs, d24Time, linjaler);
+ritaPågåendePass(pxPerMs, d24Time, linjaler, now);
+
 
   const xNow = (now.getTime() - d0.getTime()) * pxPerMs;
   ctx.strokeStyle = "red";
