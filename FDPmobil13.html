@@ -385,6 +385,7 @@ if (passStart < nuMinus24 && passEnd > nuMinus24) {
     });
   });
 }
+
 function rita() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const now = new Date();
@@ -556,10 +557,9 @@ ritaPågåendePass(pxPerMs, d24Time, linjaler, now);
   }
 
 
-  let totalArbetstid = 0;
-  let totalVilotid = 0;
+let totalArbetstid = 0;
+let totalVilotid = 0;
 
-  // Räkna arbetstid från nollställningstid, om den finns
 let arbetstidStartTime = tStart;
 if (sorter.length > 0) {
   const sistaSlut = sorter[sorter.length - 1].slut.getTime();
@@ -577,41 +577,84 @@ if (sorter.length > 0) {
   }
 }
 
-// Arbetstid: från nollställningstid framåt
-for (let i = 0; i < sorter.length; i++) {
-  const p = sorter[i];
-  const s = Math.max(p.start.getTime(), arbetstidStartTime, tStart);
-  const e = Math.min(p.slut.getTime(), tSlut);
-  if (e > s) totalArbetstid += e - s;
+// Om vilan sträcker sig förbi NU (t.ex. pågående 8h vila), ingen arbetstid ska räknas
+if (arbetstidStartTime >= now.getTime()) {
+  arbetstidStartTime = now.getTime();
 }
 
-// Vilotid: alltid från NU-24h till NU
-for (let i = 0; i < vilor.length; i++) {
-  const v = vilor[i];
-  const vilaTid = v.slut.getTime() - v.start.getTime();
-  const s = Math.max(v.start.getTime(), tStart);
-  const e = Math.min(v.slut.getTime(), tSlut);
-  if (e > s) {
-    if (vilaTid < 2 * 3600 * 1000) {
-      totalArbetstid += e - s;
-    } else {
-      totalVilotid += e - s;
-    }
+// Summera arbetstid från arbetstidStartTime fram till nu, inklusive vila < 2h
+for (let p of sorter) {
+  const passStart = p.start.getTime();
+  const passSlut = p.slut.getTime();
+
+  if (passSlut > arbetstidStartTime && passStart < now.getTime()) {
+    const startTid = Math.max(passStart, arbetstidStartTime);
+    const slutTid = Math.min(passSlut, now.getTime());
+    totalArbetstid += slutTid - startTid;
+  }
+}
+
+// Lägg till vilor < 2h som arbetstid
+for (const vila of vilor) {
+  const vilaStart = Math.max(vila.start.getTime(), arbetstidStartTime);
+  const vilaSlut = Math.min(vila.slut.getTime(), now.getTime());
+  const vilaLängd = vilaSlut - vilaStart;
+
+  if (vilaLängd > 0 && vilaLängd < 2 * 3600 * 1000) {
+    totalArbetstid += vilaLängd;
+  }
+}
+// Se till att det alltid finns en vila från NU-24h till första arbetspassets start, om gap finns
+if (sorter.length > 0) {
+  const förstaStart = sorter[0].start.getTime();
+  if (förstaStart > tStart) {
+    vilor.unshift({
+      start: new Date(tStart),
+      slut: new Date(förstaStart)
+    });
+  }
+} else {
+  // Inga pass alls – hela dygnet är vila
+  vilor.push({
+    start: new Date(tStart),
+    slut: new Date(now.getTime())
+  });
+}
+
+// Lägg till initial vila mellan NU-24h och första passets start (även om det börjar före tStart)
+if (sorter.length === 0 || sorter[0].start.getTime() > tStart) {
+  const förstaStart = sorter.length > 0 ? sorter[0].start.getTime() : now.getTime();
+  vilor.unshift({ start: new Date(tStart), slut: new Date(förstaStart) });
+}
+
+// Summera vilotid mellan NU-24h och NU, exkludera vila < 2h
+for (const vila of vilor) {
+  const start = Math.max(vila.start.getTime(), tStart);
+  const slut = Math.min(vila.slut.getTime(), now.getTime());
+  const längd = slut - start;
+
+  if (slut > start && längd >= 2 * 3600 * 1000) {
+    totalVilotid += längd;
   }
 }
 
 
-  function msTillText(ms) {
-    const totS = Math.floor(ms / 1000);
-    const h = Math.floor(totS / 3600);
-    const m = Math.floor((totS % 3600) / 60);
-    return (h > 0 ? h + "h " : "") + m.toString().padStart(2, "0") + "m";
-  }
 
-  document.getElementById("status").textContent =
-    "Arbetstid: " + msTillText(totalArbetstid) +
-    "   Vilotid: " + msTillText(totalVilotid);
+
+
+// Konvertera ms till text
+function msTillText(ms) {
+  const totS = Math.floor(ms / 1000);
+  const h = Math.floor(totS / 3600);
+  const m = Math.floor((totS % 3600) / 60);
+  return (h > 0 ? h + "h " : "") + m.toString().padStart(2, "0") + "m";
 }
+
+document.getElementById("status").textContent =
+  "Arbetstid: " + msTillText(totalArbetstid) +
+  "   Vilotid: " + msTillText(totalVilotid);
+}
+
 
 function uppdatera() {
   storleksanpassaCanvas();
