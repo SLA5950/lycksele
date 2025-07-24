@@ -26,8 +26,7 @@
     user-select: none;
   }
   #timeDisplay {
-    font-size: 6vw; /* responsiv storlek */
-    max-font-size: 5rem;
+    font-size: 6vw;
     font-weight: 700;
     background: #111;
     padding: 1rem 4rem;
@@ -41,7 +40,6 @@
   }
   button {
     font-size: 5vw;
-    max-font-size: 2rem;
     padding: 1rem 3rem;
     margin: 0.5rem 1rem;
     border: none;
@@ -107,7 +105,6 @@
   }
   label {
     font-size: 4vw;
-    max-font-size: 1.8rem;
     user-select: none;
     display: flex;
     align-items: center;
@@ -196,18 +193,37 @@ function updateTimer() {
       const soundOn = document.getElementById('soundToggle').checked;
       const vibrationOn = document.getElementById('vibrationToggle').checked;
 
-      if (soundOn) playBeep(signalCount);
-      if (vibrationOn) vibratePattern(signalCount);
+      // Spela ljud och vibrera
+      if (soundOn) {
+        // Resume AudioContext för att låsa upp ljudenhet (speciellt i Safari)
+        audioContext.resume().then(() => {
+          playBeep(signalCount);
+        });
+      }
+      if (vibrationOn) {
+        vibratePattern(signalCount);
+      }
     }
   }
 }
 
 document.getElementById('startBtn').addEventListener('click', () => {
+  // Skapa audioContext och lås upp ljudenheten vid knapptryck
   if (!audioContext) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
   }
-  if (timerInterval) return; // redan igång
+  audioContext.resume();
+
+  if (timerInterval) return; // om redan igång
+  secondsElapsed = 0;
+  lastSignalCount = 0;
+  document.getElementById('timeDisplay').textContent = '0:00';
   timerInterval = setInterval(updateTimer, 1000);
+
+  // Kör en snabb vibration för feedback direkt på knapptryck om aktiverat
+  if (document.getElementById('vibrationToggle').checked) {
+    navigator.vibrate(100);
+  }
 });
 
 document.getElementById('stopBtn').addEventListener('click', () => {
