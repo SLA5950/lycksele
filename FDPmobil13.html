@@ -235,7 +235,13 @@ function simuleraFDPMax() {
   const nu = new Date();
   const simStart = new Date(nu);
   const sorter = [...arbetspass].sort((a, b) => a.start - b.start);
-  const maxSimtid = 48 * 60; // max 48 timmar
+ if (pågåendePass) {
+  const nu = new Date();
+  sorter.push({ start: pågåendePass.start, slut: nu });
+  sorter.sort((a, b) => a.start - b.start);
+}
+ 
+const maxSimtid = 48 * 60; // max 48 timmar
 
   for (let minut = 1; minut <= maxSimtid; minut++) {
     const nuPlusX = new Date(simStart.getTime() + minut * 60 * 1000);
