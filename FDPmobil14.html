@@ -57,6 +57,8 @@
   <button onclick="läggTillEllerUppdateraPass()">Add/Uppdatera</button>
   <button id="btnTaBort" onclick="taBortPass()" disabled>Delete pass</button>
   <button id="btnStartStop" onclick="startaEllerStoppaPass()">Starta pass</button>
+<button id="resetStorageBtn">Nollställ</button>
+
 </div>
 
 <canvas id="canvas"></canvas>
@@ -88,6 +90,13 @@
 </div>
 
 <script>
+document.getElementById('resetStorageBtn').addEventListener('click', () => {
+  localStorage.clear();
+  alert('Minne har nollställts!');
+  // Om du behöver kan du även ladda om sidan här:
+  // location.reload();
+});
+
 function localDatetimeString(date) {
   const pad = n => n.toString().padStart(2, '0');
   return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) +
@@ -657,10 +666,15 @@ for (const p of simulerade) {
   const start = Math.max(s, fönsterStart);
   const slut = Math.min(e, slutTid.getTime());
 
-  if (slut > start && slut > nollställEfter) {
-    const justeradStart = Math.max(start, nollställEfter);
-    arbetstid += slut - justeradStart;
+if (e > fönsterStart && e > nollställEfter) {
+  const justeradStart = Math.max(s, fönsterStart, nollställEfter);
+  const justeratSlut = Math.min(e, slutTid.getTime());
+  if (justeratSlut > justeradStart) {
+    arbetstid += justeratSlut - justeradStart;
   }
+}
+
+
 }
 
 
