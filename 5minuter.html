@@ -26,25 +26,26 @@
     user-select: none;
   }
   #timeDisplay {
-    font-size: 6vw;
-    font-weight: 700;
-    background: #111;
-    padding: 1rem 4rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,255,0,0.4);
-    color: #0f0;
-    font-family: monospace;
-    margin-bottom: 2rem;
-    text-align: center;
-    min-width: 150px;
-  }
+  font-size: 12vw; /* större text */
+  font-weight: 700;
+  background: #111;
+  padding: 1rem 4rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 255, 0.4); /* blå skugga */
+  color: #00f; /* blå siffror */
+  font-family: ARIAL;
+  margin-bottom: 2rem;
+  text-align: center;
+  min-width: 150px;
+}
+
   button {
     font-size: 5vw;
     padding: 1rem 3rem;
     margin: 0.5rem 1rem;
     border: none;
     border-radius: 12px;
-    background-color: #4caf50;
+    background-color: #00f;
     color: white;
     font-weight: 700;
     box-shadow: 0 4px 8px rgba(0,128,0,0.7);
@@ -82,7 +83,7 @@
     position: absolute;
     cursor: pointer;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #555;
+    background-color: #00f;
     transition: 0.4s;
     border-radius: 34px;
   }
@@ -98,7 +99,7 @@
     border-radius: 50%;
   }
   input:checked + .slider {
-    background-color: #4caf50;
+    background-color: #00f;
   }
   input:checked + .slider:before {
     transform: translateX(26px);
@@ -185,7 +186,7 @@ function updateTimer() {
   document.getElementById('timeDisplay').textContent =
     `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
-  if (secondsElapsed % 10 === 0) {
+  if (secondsElapsed % 300 === 0) {
     const signalCount = secondsElapsed / 10;
     if (signalCount > lastSignalCount) {
       lastSignalCount = signalCount;
