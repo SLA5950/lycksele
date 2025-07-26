@@ -92,7 +92,7 @@
 <script>
 document.getElementById('resetStorageBtn').addEventListener('click', () => {
   localStorage.clear();
-  alert('Minne har nollställts!');
+  alert('Minne har nollställts! Ladda om sidan!');
   // Om du behöver kan du även ladda om sidan här:
   // location.reload();
 });
@@ -616,7 +616,6 @@ function uppdatera() {
 
 function simuleraFDPMax() {
   const nu = new Date();
-  let simTime = new Date(nu);
   const maxMinuter = 24 * 60;
 
   const sorter = [...arbetspass];
@@ -624,14 +623,20 @@ function simuleraFDPMax() {
     sorter.push({ start: pågåendePass.start, slut: new Date() });
   }
   sorter.sort((a, b) => a.start - b.start);
-
-  // Bygg ny lista för simulering med ett fiktivt pass från NU till simTime
+let vilor = [];
   for (let i = 0; i < maxMinuter; i++) {
     const slutTid = new Date(nu.getTime() + i * 60000);
-    const simulerade = [...sorter, { start: nu, slut: slutTid }];
+    const simulerade = [...sorter];
+const simuleratPass = { start: nu, slut: slutTid };
+
+// Lägg bara till om det inte redan finns ett arbetspass som överlappar
+const överlappar = sorter.some(p => !(p.slut <= simuleratPass.start || p.start >= simuleratPass.slut));
+if (!överlappar) simulerade.push(simuleratPass);
+
     simulerade.sort((a, b) => a.start - b.start);
 
-    const vilor = [];
+    // Beräkna vilor (pauser mellan passen)
+     vilor = [];
     for (let j = 0; j < simulerade.length - 1; j++) {
       const end = simulerade[j].slut.getTime();
       const nextStart = simulerade[j + 1].start.getTime();
@@ -639,119 +644,100 @@ function simuleraFDPMax() {
         vilor.push({ start: new Date(end), slut: new Date(nextStart) });
       }
     }
-
-    // Lägg vila sist om passet inte når slutet
     if (simulerade.length > 0 && slutTid > simulerade[simulerade.length - 1].slut) {
       vilor.push({ start: simulerade[simulerade.length - 1].slut, slut: slutTid });
     }
 
     // Hitta senaste vila ≥ 8h → nollställning
-    let nollställEfter = nu.getTime() - 24 * 3600 * 1000;
-    for (const vila of vilor) {
-      const längd = vila.slut - vila.start;
-      if (längd >= 8 * 3600 * 1000 && vila.slut.getTime() <= slutTid.getTime()) {
-        nollställEfter = vila.slut.getTime();
+  // Hitta senaste vila ≥ 8h → nollställning
+const fönsterStart = slutTid.getTime() - 24 * 3600 * 1000;
+let nollställEfter = fönsterStart;
+for (const vila of vilor) {
+  const längd = vila.slut - vila.start;
+  const vilaSlut = vila.slut.getTime();
+  if (
+    längd >= 8 * 3600 * 1000 &&
+    vilaSlut > fönsterStart
+  ) {
+    nollställEfter = Math.max(nollställEfter, vilaSlut);
+  }
+}
+
+
+    // Beräkna arbetstid efter nollställning
+    let arbetstid = 0;
+    for (const p of simulerade) {
+      const s = p.start.getTime();
+      const e = p.slut.getTime();
+      if (e <= fönsterStart) continue;
+      const justeradStart = Math.max(s, fönsterStart, nollställEfter);
+      const justeratSlut = Math.min(e, slutTid.getTime());
+      if (justeratSlut > justeradStart) {
+        arbetstid += justeratSlut - justeradStart;
       }
     }
 
-    // Beräkna arbetstid efter nollställning
-   let arbetstid = 0;
-const fönsterStart = slutTid.getTime() - 24 * 3600 * 1000;
-
-for (const p of simulerade) {
-  const s = p.start.getTime();
-  const e = p.slut.getTime();
-  if (e <= fönsterStart) continue;
-
-  const start = Math.max(s, fönsterStart);
-  const slut = Math.min(e, slutTid.getTime());
-
-if (e > fönsterStart && e > nollställEfter) {
-  const justeradStart = Math.max(s, fönsterStart, nollställEfter);
-  const justeratSlut = Math.min(e, slutTid.getTime());
-  if (justeratSlut > justeradStart) {
-    arbetstid += justeratSlut - justeradStart;
-  }
-}
-
-
-}
-
-
-
     // Lägg till vila <2h som arbetstid
     for (const vila of vilor) {
-   let fönsterStart = slutTid.getTime() - 24 * 3600 * 1000;
-  const s = Math.max(vila.start.getTime(), nollställEfter, fönsterStart);
-  const e = Math.min(vila.slut.getTime(), slutTid.getTime());
-  const längd = e - s;
-  if (längd > 0 && längd < 2 * 3600 * 1000) arbetstid += längd;
-}
+      const s = Math.max(vila.start.getTime(), nollställEfter, fönsterStart);
+      const e = Math.min(vila.slut.getTime(), slutTid.getTime());
+      const längd = e - s;
+      if (längd > 0 && längd < 2 * 3600 * 1000) arbetstid += längd;
+    }
 
-    // Kolla om någon vila ≥ 4h finns inom rullande 24h-fönster
+    // Slå ihop vilor ≥ 4h inom fönstret
+    let senasteSlut = null;
+    let aktuellVilaStart = null;
+    let hittadeVilor = [];
+    for (const vila of vilor) {
+      const s = Math.max(vila.start.getTime(), fönsterStart);
+      const e = Math.min(vila.slut.getTime(), slutTid.getTime());
+      if (e <= s) continue; // utanför fönstret
+      if (senasteSlut !== null && s > senasteSlut) {
+        const längd = senasteSlut - aktuellVilaStart;
+        if (längd >= 4 * 3600 * 1000) hittadeVilor.push({ start: aktuellVilaStart, slut: senasteSlut });
+        aktuellVilaStart = s;
+      } else if (senasteSlut === null) {
+        aktuellVilaStart = s;
+      }
+      senasteSlut = Math.max(senasteSlut || 0, e);
+    }
+    if (aktuellVilaStart !== null) {
+      const längd = senasteSlut - aktuellVilaStart;
+      if (längd >= 4 * 3600 * 1000) hittadeVilor.push({ start: aktuellVilaStart, slut: senasteSlut });
+    }
 
+    const harTillräckligVila = hittadeVilor.length > 0;
+    const harNåttFDPmax = arbetstid >= 15 * 3600 * 1000;
 
-// Slå ihop vilor inom fönstret som är sammanhängande (utan arbete emellan)
-let senasteSlut = null;
-let aktuellVilaStart = null;
-let hittadeVilor = [];
+    if (harNåttFDPmax && !harTillräckligVila) {
+      skrivFDPResultat(`FDP max 15h nås efter ${formatTidText(i)} kl ${slutTid.toTimeString().slice(0,5)}`);
+      return;
+    }
 
-for (const vila of vilor) {
-  const s = Math.max(vila.start.getTime(), fönsterStart);
-  const e = Math.min(vila.slut.getTime(), slutTid.getTime());
-  if (e <= s) continue; // utanför fönstret
+    if (harNåttFDPmax) {
+      skrivFDPResultat(`FDP max 15h nås efter ${formatTidText(i)} kl ${slutTid.toTimeString().slice(0,5)}`);
+      return;
+    }
 
-  if (senasteSlut !== null && s > senasteSlut) {
-    // avsluta pågående vila
-    const längd = senasteSlut - aktuellVilaStart;
-    if (längd >= 4 * 3600 * 1000) hittadeVilor.push({ start: aktuellVilaStart, slut: senasteSlut });
-    // starta ny
-    aktuellVilaStart = s;
-  } else if (senasteSlut === null) {
-    aktuellVilaStart = s;
+    if (!harTillräckligVila) {
+      skrivFDPResultat(`Vila <4h efter ${formatTidText(i)} kl ${slutTid.toTimeString().slice(0,5)}`);
+      return;
+    }
   }
 
-  senasteSlut = Math.max(senasteSlut || 0, e);
-}
-// sista
-if (aktuellVilaStart !== null) {
-  const längd = senasteSlut - aktuellVilaStart;
-  if (längd >= 4 * 3600 * 1000) hittadeVilor.push({ start: aktuellVilaStart, slut: senasteSlut });
+  function skrivFDPResultat(text) {
+    const el = document.getElementById("fdpResult");
+    el.textContent = text;
+  }
+
+  function formatTidText(mins) {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+  }
 }
 
-const harTillräckligVila = hittadeVilor.length > 0;
-const harNåttFDPmax = arbetstid >= 15 * 3600 * 1000;
-
-if (harNåttFDPmax && !harTillräckligVila) {
-  // Båda inträffar, men FDP är viktigast
-  skrivFDPResultat(`FDP max 15h nås efter ${formatTidText(i)} kl ${slutTid.toTimeString().slice(0,5)}`);
-  return;
-}
-
-if (harNåttFDPmax) {
-  skrivFDPResultat(`FDP max 15h nås efter ${formatTidText(i)} kl ${slutTid.toTimeString().slice(0,5)}`);
-  return;
-}
-
-if (!harTillräckligVila) {
-  skrivFDPResultat(`Vila <4h efter ${formatTidText(i)} kl ${slutTid.toTimeString().slice(0,5)}`);
-  return;
-}
-
-
-
-function skrivFDPResultat(text) {
-  const el = document.getElementById("fdpResult");
-  el.textContent = text;
-}
-}
-
-function formatTidText(mins) {
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-}
-}
 
 </script>
 
