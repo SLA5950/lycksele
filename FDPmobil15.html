@@ -118,7 +118,8 @@ const ctx = canvas.getContext("2d");
 let arbetspass = [];
 let redigerarIndex = -1;
 let passPositions = [];
-let markeratPassIndex = -1;
+let markeratPassId = null;
+
 let pågåendePass = null;
 
 // Välj knappen direkt
@@ -574,6 +575,7 @@ document.getElementById("status").textContent =
 function uppdatera() {
   storleksanpassaCanvas();
   rita();
+ simuleraFDPMax();
   setTimeout(uppdatera, 60 * 1000);
 }
 
@@ -617,12 +619,7 @@ canvas.addEventListener("click", e => {
  
 
 uppdatera();
-function uppdatera() {
-  storleksanpassaCanvas();
-  rita();
-  simuleraFDPMax(); // Lägg till här
-  setTimeout(uppdatera, 60 * 1000);
-}
+
 
 function simuleraFDPMax() {
   const nu = new Date();
