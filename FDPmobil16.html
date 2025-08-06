@@ -477,21 +477,16 @@ let totalArbetstid = 0;
 let totalVilotid = 0;
 
 let arbetstidStartTime = tStart;
-if (sorter.length > 0) {
-  const sistaSlut = sorter[sorter.length - 1].slut.getTime();
-  const vilaSedanSist = now.getTime() - sistaSlut;
-  if (vilaSedanSist >= 8 * 3600 * 1000) {
-    arbetstidStartTime = now.getTime(); // ingen arbetstid ska räknas
-  } else {
-    for (let i = 0; i < vilor.length; i++) {
-      const vilaTid = vilor[i].slut.getTime() - vilor[i].start.getTime();
-      if (vilaTid >= 8 * 3600 * 1000 && vilor[i].slut.getTime() >= tStart) {
-        arbetstidStartTime = vilor[i].slut.getTime();
-        break;
-      }
-    }
+
+// Hitta senaste vila ≥ 8h, oavsett om den är före eller efter tStart
+for (let i = vilor.length - 1; i >= 0; i--) {
+  const vilaTid = vilor[i].slut.getTime() - vilor[i].start.getTime();
+  if (vilaTid >= 8 * 3600 * 1000) {
+    arbetstidStartTime = vilor[i].slut.getTime();
+    break;
   }
 }
+
 
 // Om vilan sträcker sig förbi NU (t.ex. pågående 8h vila), ingen arbetstid ska räknas
 if (arbetstidStartTime >= now.getTime()) {
@@ -568,7 +563,7 @@ function msTillText(ms) {
 
 document.getElementById("status").textContent =
   "Arbetstid: " + msTillText(totalArbetstid) +
-  "   Vilotid: " + msTillText(totalVilotid);
+  "\u00A0\u00A0\u00A0 Vilotid (24h): " + msTillText(totalVilotid);
 }
 
 
