@@ -118,7 +118,7 @@ const ctx = canvas.getContext("2d");
 let arbetspass = [];
 let redigerarIndex = -1;
 let passPositions = [];
-let markeratPassId = null;
+markeratPassId = null;
 
 let pågåendePass = null;
 
@@ -196,7 +196,7 @@ function läggTillEllerUppdateraPass() {
 
   localStorage.setItem("arbetspass", JSON.stringify(arbetspass));
   rensaInmatning();
-  let markeratPassId = null;
+ markeratPassId = null;
   document.getElementById("btnTaBort").disabled = true;
 rita();  
   uppdatera();
@@ -207,7 +207,7 @@ function rensaInmatning() {
   document.getElementById("start").value = "";
   document.getElementById("slut").value = "";
   redigerarIndex = -1;
-  markeratPassIndex = -1;
+  markeratPassId = null;
   document.getElementById("btnTaBort").disabled = true;
 }
 
