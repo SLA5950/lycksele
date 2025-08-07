@@ -301,6 +301,30 @@ if (passStart < nuMinus24 && passEnd > nuMinus24) {
   });
 }
 
+
+function slåIhopÖverlappandePass(passen) {
+  if (passen.length === 0) return [];
+
+  const sorterade = passen.slice().sort((a, b) => a.start - b.start);
+  const resultat = [];
+  let aktuell = { start: sorterade[0].start, slut: sorterade[0].slut };
+
+  for (let i = 1; i < sorterade.length; i++) {
+    const p = sorterade[i];
+    if (p.start <= aktuell.slut) {
+      aktuell.slut = new Date(Math.max(aktuell.slut.getTime(), p.slut.getTime()));
+    } else {
+      resultat.push(aktuell);
+      aktuell = { start: p.start, slut: p.slut };
+    }
+  }
+
+  resultat.push(aktuell);
+  return resultat;
+}
+
+
+
 function rita() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const now = new Date();
@@ -494,16 +518,17 @@ if (arbetstidStartTime >= now.getTime()) {
 }
 
 // Summera arbetstid från arbetstidStartTime fram till nu, inklusive vila < 2h
-for (let p of sorter) {
-  const passStart = p.start.getTime();
-  const passSlut = p.slut.getTime();
+const passInomFönster = sorter
+  .filter(p => p.slut.getTime() > arbetstidStartTime && p.start.getTime() < now.getTime())
+  .map(p => ({
+    start: new Date(Math.max(p.start.getTime(), arbetstidStartTime)),
+    slut: new Date(Math.min(p.slut.getTime(), now.getTime()))
+  }));
 
-  if (passSlut > arbetstidStartTime && passStart < now.getTime()) {
-    const startTid = Math.max(passStart, arbetstidStartTime);
-    const slutTid = Math.min(passSlut, now.getTime());
-    totalArbetstid += slutTid - startTid;
-  }
-}
+const hopslagnaPass = slåIhopÖverlappandePass(passInomFönster);
+
+totalArbetstid = hopslagnaPass.reduce((summa, p) => summa + (p.slut - p.start), 0);
+
 
 // Lägg till vilor < 2h som arbetstid
 for (const vila of vilor) {
@@ -667,17 +692,18 @@ for (const vila of vilor) {
 
 
     // Beräkna arbetstid efter nollställning
-    let arbetstid = 0;
-    for (const p of simulerade) {
-      const s = p.start.getTime();
-      const e = p.slut.getTime();
-      if (e <= fönsterStart) continue;
-      const justeradStart = Math.max(s, fönsterStart, nollställEfter);
-      const justeratSlut = Math.min(e, slutTid.getTime());
-      if (justeratSlut > justeradStart) {
-        arbetstid += justeratSlut - justeradStart;
-      }
-    }
+   // Beräkna arbetstid efter nollställning (utan överlappande pass)
+const arbetstidStart = Math.max(fönsterStart, nollställEfter);
+const relevantaPass = simulerade
+  .filter(p => p.slut.getTime() > arbetstidStart && p.start.getTime() < slutTid.getTime())
+  .map(p => ({
+    start: new Date(Math.max(p.start.getTime(), arbetstidStart)),
+    slut: new Date(Math.min(p.slut.getTime(), slutTid.getTime()))
+  }));
+
+const hopslagna = slåIhopÖverlappandePass(relevantaPass);
+let arbetstid = hopslagna.reduce((summa, p) => summa + (p.slut.getTime() - p.start.getTime()), 0);
+
 
    // Lägg till vila <2h som arbetstid, men undvik att addera samma vila flera gånger
 for (const vila of vilor) {
