@@ -376,17 +376,10 @@ function rita() {
         ctx.fillText(label, 5, y - 45);
     });
 
-    // Create a temporary list of all shifts, including the current one if it exists.
-    const allaPass = [...arbetspass];
+    const sorter = [...arbetspass].sort((a, b) => a.start - b.start);
     if (pågåendePass) {
-        allaPass.push({
-            id: pågåendePass.id,
-            start: pågåendePass.start,
-            slut: now // Temporarily set the end time to 'now' for calculation and drawing
-        });
+        sorter.push({ id: pågåendePass.id, start: pågåendePass.start, slut: now });
     }
-
-    const sorter = allaPass.sort((a, b) => a.start - b.start);
 
     sorter.forEach((p) => {
         linjaler.forEach(({ start, y }) => {
@@ -430,6 +423,12 @@ function rita() {
     });
 
     const vilor = [];
+    if (sorter.length > 0) {
+        const senastSlutnaPass = sorter[sorter.length - 1];
+        if (now > senastSlutnaPass.slut) {
+            vilor.push({ start: senastSlutnaPass.slut, slut: now });
+        }
+    }
     for (let i = 0; i < sorter.length - 1; i++) {
         const end = sorter[i].slut.getTime();
         const nextStart = sorter[i + 1].start.getTime();
@@ -437,9 +436,7 @@ function rita() {
             vilor.push({ start: new Date(end), slut: new Date(nextStart) });
         }
     }
-    if (sorter.length > 0 && now > sorter[sorter.length - 1].slut) {
-        vilor.push({ start: sorter[sorter.length - 1].slut, slut: now });
-    }
+
     vilor.forEach((v) => {
         const vilaTid = v.slut - v.start;
         let färg;
