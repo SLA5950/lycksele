@@ -87,6 +87,9 @@
         <div style="width: 40px; height: 10px; background: yellow; margin-right: 8px;"></div>
         <span>Vila ≥ 8h</span>
     </div>
+    <div style="display: flex; align-items: center; margin: 20px 0; color: #606060;">
+        Copyright Ove Lundström &copy;
+    </div>
 </div>
 <script>
     document.getElementById('resetStorageBtn').addEventListener('click', () => {
@@ -157,6 +160,14 @@
                 console.warn("Fel vid inläsning av arbetspass från localStorage", e);
             }
         }
+        // Kontrollera om arbetspass-arrayen är tom och lägg till ett standardpass om så är fallet.
+        if (arbetspass.length === 0) {
+            arbetspass.push({
+                id: genereraId(),
+                start: new Date('2022-01-01T02:00:00'),
+                slut: new Date('2022-01-01T03:00:00')
+            });
+        }
 
         const pågåendeSparat = localStorage.getItem("pågåendePass");
         if (pågåendeSparat) {
@@ -171,6 +182,7 @@
         }
         uppdateraKnappar();
     }
+
 
     laddaFrånMinne();
 
@@ -279,8 +291,8 @@
         pågåendePass = null;
         uppdateraKnappar();
         uppdatera();
+        }
     }
-}
     
     function ritaPågåendePass(pxPerMs, linjaler, now) {
         if (!pågåendePass) return;
@@ -342,7 +354,7 @@
         return resultat;
     }
 
-function rita() {
+    function rita() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const now = new Date();
     const d0 = nollställTid(now);
@@ -517,7 +529,7 @@ function rita() {
     document.getElementById("status").textContent =
         "Arbetstid: " + msTillText(totalArbetstid) +
         "\u00A0\u00A0\u00A0 Vilotid (24h): " + msTillText(totalVilotid);
-}
+    }
 
     function simuleraFDPMax() {
         const nu = new Date();
