@@ -33,6 +33,11 @@
             margin-top: 10px;
             font-weight: bold;
         }
+        #fdpResult {
+            margin-top: 8px;
+            font-weight: bold;
+            color: orange;
+        }
         button.knapp-grön {
             background-color: #0a0 !important;
             color: #fff !important;
@@ -64,7 +69,7 @@
 <canvas id="canvas"></canvas>
 
 <div id="status"></div>
-<div id="fdpResult" style="margin-top: 8px; font-weight: bold; color: orange;"></div>
+<div id="fdpResult"></div>
 
 <div id="legend" style="margin-top: 10px; text-align: left; max-width: 1000px; margin-left: auto; margin-right: auto;">
     <div style="display: flex; align-items: center; margin: 4px 0;">
@@ -124,7 +129,7 @@
     let passPositions = [];
     let markeratPassId = null;
     let pågåendePass = null;
-    let blinkState = true;
+    let blinkState = true; 
 
     const btnStartStop = document.getElementById("btnStartStop");
     const btnStartStopSet = document.getElementById("btnStartStopSet");
@@ -160,7 +165,6 @@
                 console.warn("Fel vid inläsning av arbetspass från localStorage", e);
             }
         }
-        // Kontrollera om arbetspass-arrayen är tom och lägg till ett standardpass om så är fallet.
         if (arbetspass.length === 0) {
             arbetspass.push({
                 id: genereraId(),
@@ -183,8 +187,17 @@
         uppdateraKnappar();
     }
 
+    // NY FUNKTION: Ladda FDP-resultat från localStorage
+    function laddaFDPResultat() {
+        const sparadText = localStorage.getItem("fdpResultText");
+        if (sparadText) {
+            document.getElementById("fdpResult").textContent = sparadText;
+        }
+    }
+
 
     laddaFrånMinne();
+    laddaFDPResultat(); // Anrop för att ladda sparade FDP-resultatet
 
     function läggTillEllerUppdateraPass() {
         const s = document.getElementById("start").value;
@@ -271,37 +284,29 @@
     }
 
     function startaEllerStoppaMedSet() {
-    if (pågåendePass === null) {
-        const starttidStr = document.getElementById("start").value;
-        const starttid = parseLocalDatetime(starttidStr);
-        if (starttid && !isNaN(starttid.getTime())) {
-            pågåendePass = { id: genereraId(), start: starttid };
-            localStorage.setItem("pågåendePass", JSON.stringify(pågåendePass));
+        if (pågåendePass === null) {
+            const starttidStr = document.getElementById("start").value;
+            const starttid = parseLocalDatetime(starttidStr);
+            if (starttid && !isNaN(starttid.getTime())) {
+                pågåendePass = { id: genereraId(), start: starttid };
+                localStorage.setItem("pågåendePass", JSON.stringify(pågåendePass));
+                uppdateraKnappar();
+                uppdatera();
+            } else {
+                alert("Ogiltig starttid angiven. Vänligen fyll i en starttid i fältet.");
+            }
+        } else {
+            const slut = new Date(new Date().getTime() + 30 * 60000);
+            pågåendePass.slut = slut;
+            arbetspass.push(pågåendePass);
+            localStorage.setItem("arbetspass", JSON.stringify(arbetspass));
+            localStorage.removeItem("pågåendePass");
+            pågåendePass = null;
             uppdateraKnappar();
             uppdatera();
-        } else {
-            alert("Ogiltig starttid angiven. Vänligen fyll i en starttid i fältet.");
-        }
-    } else {
-        const slut = new Date(new Date().getTime() + 30 * 60000);
-        pågåendePass.slut = slut;
-        arbetspass.push(pågåendePass);
-        localStorage.setItem("arbetspass", JSON.stringify(arbetspass));
-        localStorage.removeItem("pågåendePass");
-        pågåendePass = null;
-        uppdateraKnappar();
-        uppdatera();
         }
     }
     
-    function beräknaOchFormateraPassTid(start, slut) {
-        const ms = slut - start;
-        const totalMinutes = Math.floor(ms / 60000);
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-        return `${hours}h ${minutes}min`;
-    }
-
     function ritaPågåendePass(pxPerMs, linjaler, now) {
         if (!pågåendePass) return;
         linjaler.forEach(({ start, y }) => {
@@ -363,191 +368,180 @@
     }
 
     function rita() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const now = new Date();
-    const d0 = nollställTid(now);
-    const d24 = new Date(d0.getTime() - 24 * 3600 * 1000);
-    const pxPerMs = canvas.clientWidth / (24 * 3600 * 1000);
-    passPositions = [];
-    const linjaler = [
-        { label: formatDatum(d24), start: d24, y: 60 },
-        { label: formatDatum(d0), start: d0, y: 160 },
-    ];
-    ctx.font = "15px monospace";
-    ctx.textBaseline = "middle";
-    linjaler.forEach(({ label, start, y }) => {
-        ctx.fillStyle = "#333";
-        ctx.fillRect(0, y - 20, canvas.width, 40);
-        ctx.strokeStyle = "#666";
-        ctx.fillStyle = "#aaa";
-        for (let h = 0; h <= 24; h++) {
-            const x = (h / 24) * canvas.width;
-            ctx.beginPath();
-            ctx.moveTo(x, y - 20);
-            ctx.lineTo(x, y + 20);
-            ctx.stroke();
-            if (h % 2 === 0) {
-                const text = h.toString().padStart(2, "0");
-                const textWidth = ctx.measureText(text).width;
-                ctx.fillText(text, x - textWidth / 2, y - 30);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const now = new Date();
+        const d0 = nollställTid(now);
+        const d24 = new Date(d0.getTime() - 24 * 3600 * 1000);
+        const pxPerMs = canvas.clientWidth / (24 * 3600 * 1000);
+        passPositions = [];
+        const linjaler = [
+            { label: formatDatum(d24), start: d24, y: 60 },
+            { label: formatDatum(d0), start: d0, y: 160 },
+        ];
+        ctx.font = "15px monospace";
+        ctx.textBaseline = "middle";
+        linjaler.forEach(({ label, start, y }) => {
+            ctx.fillStyle = "#333";
+            ctx.fillRect(0, y - 20, canvas.width, 40);
+            ctx.strokeStyle = "#666";
+            ctx.fillStyle = "#aaa";
+            for (let h = 0; h <= 24; h++) {
+                const x = (h / 24) * canvas.width;
+                ctx.beginPath();
+                ctx.moveTo(x, y - 20);
+                ctx.lineTo(x, y + 20);
+                ctx.stroke();
+                if (h % 2 === 0) {
+                    const text = h.toString().padStart(2, "0");
+                    const textWidth = ctx.measureText(text).width;
+                    ctx.fillText(text, x - textWidth / 2, y - 30);
+                }
             }
+            ctx.fillStyle = "#fff";
+            ctx.fillText(label, 5, y - 45);
+        });
+
+        const sorter = [...arbetspass].sort((a, b) => a.start - b.start);
+        if (pågåendePass) {
+            sorter.push({ id: pågåendePass.id, start: pågåendePass.start, slut: now });
         }
-        ctx.fillStyle = "#fff";
-        ctx.fillText(label, 5, y - 45);
-    });
 
-    const sorter = [...arbetspass].sort((a, b) => a.start - b.start);
-    if (pågåendePass) {
-        sorter.push({ id: pågåendePass.id, start: pågåendePass.start, slut: now });
-    }
-
-    sorter.forEach((p) => {
-        linjaler.forEach(({ start, y }) => {
-            const linStartMs = start.getTime();
-            const linEndMs = linStartMs + 24 * 3600 * 1000;
-            const passStart = p.start.getTime();
-            const passEnd = p.slut.getTime();
-            const segmenter = [];
-            const nuMinus24 = new Date(now.getTime() - 24 * 3600 * 1000).getTime();
-            if (passStart < nuMinus24 && passEnd > nuMinus24) {
-                segmenter.push({ from: passStart, to: nuMinus24, färg: "#666" });
-                segmenter.push({ from: nuMinus24, to: passEnd, färg: "#0f0" });
-            } else {
-                const färg = passEnd <= nuMinus24 ? "#666" : "#0f0";
-                segmenter.push({ from: passStart, to: passEnd, färg });
-            }
-            segmenter.forEach((seg) => {
-                const ritaStart = Math.max(seg.from, linStartMs);
-                const ritaEnd = Math.min(seg.to, linEndMs);
-                if (ritaEnd <= ritaStart) return;
-                const x = (ritaStart - linStartMs) * pxPerMs;
-                const w = (ritaEnd - ritaStart) * pxPerMs;
-                ctx.fillStyle = seg.färg;
-                ctx.fillRect(x, y - 10, w, 20);
-                if (seg.färg === "#0f0") {
-                    passPositions.push({
-                        id: p.id,
-                        xStart: x,
-                        yStart: y - 10,
-                        bredd: w,
-                        höjd: 20,
-                    });
+        sorter.forEach((p) => {
+            linjaler.forEach(({ start, y }) => {
+                const linStartMs = start.getTime();
+                const linEndMs = linStartMs + 24 * 3600 * 1000;
+                const passStart = p.start.getTime();
+                const passEnd = p.slut.getTime();
+                const segmenter = [];
+                const nuMinus24 = new Date(now.getTime() - 24 * 3600 * 1000).getTime();
+                if (passStart < nuMinus24 && passEnd > nuMinus24) {
+                    segmenter.push({ from: passStart, to: nuMinus24, färg: "#666" });
+                    segmenter.push({ from: nuMinus24, to: passEnd, färg: "#0f0" });
+                } else {
+                    const färg = passEnd <= nuMinus24 ? "#666" : "#0f0";
+                    segmenter.push({ from: passStart, to: passEnd, färg });
                 }
-                if (p.id === markeratPassId) {
-                    ctx.strokeStyle = "red";
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(x, y - 10, w, 20);
-
-                    // Rita ut arbetstiden under det markerade passet
-                    const pass = arbetspass.find(pass => pass.id === markeratPassId);
-                    if (pass) {
-                        const tidText = beräknaOchFormateraPassTid(pass.start, pass.slut);
-                        const textWidth = ctx.measureText(tidText).width;
-                        const textX = x + w / 2 - textWidth / 2;
-                        const textY = y + 25;
-                        ctx.fillStyle = "#fff";
-                        ctx.fillText(tidText, textX, textY);
+                segmenter.forEach((seg) => {
+                    const ritaStart = Math.max(seg.from, linStartMs);
+                    const ritaEnd = Math.min(seg.to, linEndMs);
+                    if (ritaEnd <= ritaStart) return;
+                    const x = (ritaStart - linStartMs) * pxPerMs;
+                    const w = (ritaEnd - ritaStart) * pxPerMs;
+                    ctx.fillStyle = seg.färg;
+                    ctx.fillRect(x, y - 10, w, 20);
+                    if (seg.färg === "#0f0") {
+                        passPositions.push({
+                            id: p.id,
+                            xStart: x,
+                            yStart: y - 10,
+                            bredd: w,
+                            höjd: 20,
+                        });
                     }
-                }
+                    if (p.id === markeratPassId) {
+                        ctx.strokeStyle = "red";
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(x, y - 10, w, 20);
+                    }
+                });
             });
         });
-    });
 
-    const vilor = [];
-    if (sorter.length > 0) {
-        const senastSlutnaPass = sorter[sorter.length - 1];
-        if (now > senastSlutnaPass.slut) {
-            vilor.push({ start: senastSlutnaPass.slut, slut: now });
-        }
-    }
-    for (let i = 0; i < sorter.length - 1; i++) {
-        const end = sorter[i].slut.getTime();
-        const nextStart = sorter[i + 1].start.getTime();
-        if (nextStart > end) {
-            vilor.push({ start: new Date(end), slut: new Date(nextStart) });
-        }
-    }
-
-    vilor.forEach((v) => {
-        const vilaTid = v.slut - v.start;
-        let färg;
-        if (vilaTid >= 8 * 3600 * 1000) {
-            färg = "yellow";
-        } else if (vilaTid >= 4 * 3600 * 1000) {
-            färg = "#00f";
-        } else if (vilaTid < 2 * 3600 * 1000) {
-            färg = "#0f0";
-        } else {
-            färg = "#88f";
-        }
-        const höjd = vilaTid < 2 * 3600 * 1000 ? 4 : 10;
-        linjaler.forEach(({ start, y }) => {
-            const linStart = start.getTime();
-            const linEnd = linStart + 24 * 3600 * 1000;
-            const ritaStart = Math.max(v.start.getTime(), linStart);
-            const ritaEnd = Math.min(v.slut.getTime(), linEnd);
-            if (ritaEnd <= ritaStart) return;
-            const x = (ritaStart - linStart) * pxPerMs;
-            const w = (ritaEnd - ritaStart) * pxPerMs;
-            ctx.fillStyle = färg;
-            ctx.fillRect(x, y - höjd / 2, w, höjd);
-        });
-    });
-
-    const xNow = (now.getTime() - d0.getTime()) * pxPerMs;
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(xNow, 40);
-    ctx.lineTo(xNow, 220);
-    ctx.stroke();
-
-    let totalArbetstid = 0;
-    let totalVilotid = 0;
-    const tStart = now.getTime() - 24 * 3600 * 1000;
-    let arbetstidStartTime = tStart;
-    for (const vila of vilor) {
-        const vilaTid = vila.slut.getTime() - vila.start.getTime();
-        if (vilaTid >= 8 * 3600 * 1000 && vila.start.getTime() >= tStart) {
-            arbetstidStartTime = Math.max(arbetstidStartTime, vila.slut.getTime());
-        }
-    }
-    const passInomFönster = sorter
-        .filter((p) => p.slut.getTime() > arbetstidStartTime && p.start.getTime() < now.getTime())
-        .map((p) => ({
-            start: new Date(Math.max(p.start.getTime(), arbetstidStartTime)),
-            slut: new Date(Math.min(p.slut.getTime(), now.getTime())),
-        }));
-    const hopslagnaPass = slåIhopÖverlappandePass(passInomFönster);
-    totalArbetstid = hopslagnaPass.reduce((summa, p) => summa + (p.slut - p.start), 0);
-    for (const vila of vilor) {
-        const vilaLängd = vila.slut.getTime() - vila.start.getTime();
-        if (vilaLängd > 0 && vilaLängd < 2 * 3600 * 1000) {
-            const start = Math.max(vila.start.getTime(), arbetstidStartTime);
-            const slut = Math.min(vila.slut.getTime(), now.getTime());
-            if (slut > start) {
-                totalArbetstid += slut - start;
+        const vilor = [];
+        if (sorter.length > 0) {
+            const senastSlutnaPass = sorter[sorter.length - 1];
+            if (now > senastSlutnaPass.slut) {
+                vilor.push({ start: senastSlutnaPass.slut, slut: now });
             }
         }
-    }
-    for (const vila of vilor) {
-        const start = Math.max(vila.start.getTime(), tStart);
-        const slut = Math.min(vila.slut.getTime(), now.getTime());
-        const längd = slut - start;
-        if (slut > start && längd >= 2 * 3600 * 1000) {
-            totalVilotid += längd;
+        for (let i = 0; i < sorter.length - 1; i++) {
+            const end = sorter[i].slut.getTime();
+            const nextStart = sorter[i + 1].start.getTime();
+            if (nextStart > end) {
+                vilor.push({ start: new Date(end), slut: new Date(nextStart) });
+            }
         }
-    }
 
-    function msTillText(ms) {
-        const totS = Math.floor(ms / 1000);
-        const h = Math.floor(totS / 3600);
-        const m = Math.floor((totS % 3600) / 60);
-        return (h > 0 ? h + "h " : "") + m.toString().padStart(2, "0") + "m";
-    }
-    document.getElementById("status").textContent =
-        "Arbetstid: " + msTillText(totalArbetstid) +
-        "\u00A0\u00A0\u00A0 Vilotid (24h): " + msTillText(totalVilotid);
+        vilor.forEach((v) => {
+            const vilaTid = v.slut - v.start;
+            let färg;
+            if (vilaTid >= 8 * 3600 * 1000) {
+                färg = "yellow";
+            } else if (vilaTid >= 4 * 3600 * 1000) {
+                färg = "#00f";
+            } else if (vilaTid < 2 * 3600 * 1000) {
+                färg = "#0f0";
+            } else {
+                färg = "#88f";
+            }
+            const höjd = vilaTid < 2 * 3600 * 1000 ? 4 : 10;
+            linjaler.forEach(({ start, y }) => {
+                const linStart = start.getTime();
+                const linEnd = linStart + 24 * 3600 * 1000;
+                const ritaStart = Math.max(v.start.getTime(), linStart);
+                const ritaEnd = Math.min(v.slut.getTime(), linEnd);
+                if (ritaEnd <= ritaStart) return;
+                const x = (ritaStart - linStart) * pxPerMs;
+                const w = (ritaEnd - ritaStart) * pxPerMs;
+                ctx.fillStyle = färg;
+                ctx.fillRect(x, y - höjd / 2, w, höjd);
+            });
+        });
+
+        const xNow = (now.getTime() - d0.getTime()) * pxPerMs;
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(xNow, 40);
+        ctx.lineTo(xNow, 220);
+        ctx.stroke();
+
+        let totalArbetstid = 0;
+        let totalVilotid = 0;
+        const tStart = now.getTime() - 24 * 3600 * 1000;
+        let arbetstidStartTime = tStart;
+        for (const vila of vilor) {
+            const vilaTid = vila.slut.getTime() - vila.start.getTime();
+            if (vilaTid >= 8 * 3600 * 1000 && vila.start.getTime() >= tStart) {
+                arbetstidStartTime = Math.max(arbetstidStartTime, vila.slut.getTime());
+            }
+        }
+        const passInomFönster = sorter
+            .filter((p) => p.slut.getTime() > arbetstidStartTime && p.start.getTime() < now.getTime())
+            .map((p) => ({
+                start: new Date(Math.max(p.start.getTime(), arbetstidStartTime)),
+                slut: new Date(Math.min(p.slut.getTime(), now.getTime())),
+            }));
+        const hopslagnaPass = slåIhopÖverlappandePass(passInomFönster);
+        totalArbetstid = hopslagnaPass.reduce((summa, p) => summa + (p.slut - p.start), 0);
+        for (const vila of vilor) {
+            const vilaLängd = vila.slut.getTime() - vila.start.getTime();
+            if (vilaLängd > 0 && vilaLängd < 2 * 3600 * 1000) {
+                const start = Math.max(vila.start.getTime(), arbetstidStartTime);
+                const slut = Math.min(vila.slut.getTime(), now.getTime());
+                if (slut > start) {
+                    totalArbetstid += slut - start;
+                }
+            }
+        }
+        for (const vila of vilor) {
+            const start = Math.max(vila.start.getTime(), tStart);
+            const slut = Math.min(vila.slut.getTime(), now.getTime());
+            const längd = slut - start;
+            if (slut > start && längd >= 2 * 3600 * 1000) {
+                totalVilotid += längd;
+            }
+        }
+
+        function msTillText(ms) {
+            const totS = Math.floor(ms / 1000);
+            const h = Math.floor(totS / 3600);
+            const m = Math.floor((totS % 3600) / 60);
+            return (h > 0 ? h + "h " : "") + m.toString().padStart(2, "0") + "m";
+        }
+        document.getElementById("status").textContent =
+            "Arbetstid: " + msTillText(totalArbetstid) +
+            "\u00A0\u00A0\u00A0 Vilotid (24h): " + msTillText(totalVilotid);
     }
 
     function simuleraFDPMax() {
@@ -641,19 +635,22 @@
             }
         }
 
-        function skrivFDPResultat(text) {
-            const el = document.getElementById("fdpResult");
-            el.textContent = text;
-        }
-
-        function formatTidText(mins) {
-            const h = Math.floor(mins / 60);
-            const m = mins % 60;
-            return `${h}h ${m.toString().padStart(2, "0")}m`;
-        }
     }
     
-    // De flyttade funktionerna
+    // NY FUNKTION: hanterar att både visa och spara resultatet
+    function skrivFDPResultat(text) {
+        const el = document.getElementById("fdpResult");
+        el.textContent = text;
+        localStorage.setItem("fdpResultText", text); // Spara i localstorage
+    }
+
+    function formatTidText(mins) {
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return `${h}h ${m.toString().padStart(2, "0")}m`;
+    }
+    
+    // Flytta uppdatera-funktionen till slutet
     function uppdatera() {
         storleksanpassaCanvas();
         rita();
@@ -667,7 +664,6 @@
         const klickX = e.clientX - rect.left;
         const klickY = e.clientY - rect.top;
         let hittat = false;
-        let passFound = null; 
         for (let i = 0; i < passPositions.length; i++) {
             const p = passPositions[i];
             if (
@@ -675,10 +671,10 @@
                 klickY >= p.yStart && klickY <= p.yStart + p.höjd
             ) {
                 markeratPassId = p.id;
-                passFound = arbetspass.find(p => p.id === markeratPassId);
-                if (passFound) {
-                    document.getElementById("start").value = localDatetimeString(passFound.start);
-                    document.getElementById("slut").value = localDatetimeString(passFound.slut);
+                const pValt = arbetspass.find(p => p.id === markeratPassId);
+                if (pValt) {
+                    document.getElementById("start").value = localDatetimeString(pValt.start);
+                    document.getElementById("slut").value = localDatetimeString(pValt.slut);
                     redigerarIndex = arbetspass.findIndex(p => p.id === markeratPassId);
                     document.getElementById("btnTaBort").disabled = false;
                     hittat = true;
@@ -695,7 +691,6 @@
         rita();
     });
 
-    // Anropa uppdatera() här, efter alla funktionsdefinitioner
     uppdatera();
 </script>
 
