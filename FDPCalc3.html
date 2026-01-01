@@ -93,7 +93,7 @@
         <span>Vila ≥ 8h</span>
     </div>
     <div style="display: flex; align-items: center; margin: 10px 0; color: #606060;">
-        Copyright Ove Lundström &copy; FDPcalc. ver 2.0
+        Copyright Ove Lundström &copy; FDPcalc. ver 3.0
     </div>
 </div>
 <script>
@@ -130,7 +130,6 @@
     let markeratPassId = null;
     let pågåendePass = null;
     let blinkState = true; 
-let aktuellFDPStart = null;
     const btnStartStop = document.getElementById("btnStartStop");
     const btnStartStopSet = document.getElementById("btnStartStopSet");
 
@@ -317,7 +316,6 @@ function formatTidText(mins) {
         uppdatera();
     }
 
-
     function startaEllerStoppaMedSet() {
         if (pågåendePass === null) {
             const starttidStr = document.getElementById("start").value;
@@ -327,7 +325,6 @@ function formatTidText(mins) {
                 localStorage.setItem("pågåendePass", JSON.stringify(pågåendePass));
                 uppdateraKnappar();
                 uppdatera();
-rensainmatning();
             } else {
                 alert("Ogiltig starttid angiven. Vänligen fyll i en starttid i fältet.");
             }
@@ -343,47 +340,7 @@ rensainmatning();
         }
     }
     
-    function ritaPågåendePass(pxPerMs, linjaler, now) {
-        if (!pågåendePass) return;
-        linjaler.forEach(({ start, y }) => {
-            const linStartMs = start.getTime();
-            const linEndMs = linStartMs + 24 * 3600 * 1000;
-            const passStart = pågåendePass.start.getTime();
-            const passEnd = now.getTime();
-            const segmenter = [];
-            const nuMinus24 = new Date(now.getTime() - 24 * 3600 * 1000).getTime();
-            if (passStart < nuMinus24 && passEnd > nuMinus24) {
-                segmenter.push({ from: passStart, to: nuMinus24, färg: "#666" });
-                segmenter.push({ from: nuMinus24, to: passEnd, färg: "#0f0" });
-            } else {
-                const färg = passEnd <= nuMinus24 ? "#666" : "#0f0";
-                segmenter.push({ from: passStart, to: passEnd, färg });
-            }
-            segmenter.forEach(seg => {
-                const ritaStart = Math.max(seg.from, linStartMs);
-                const ritaEnd = Math.min(seg.to, linEndMs);
-                if (ritaEnd <= ritaStart) return;
-                const x = (ritaStart - linStartMs) * pxPerMs;
-                const w = (ritaEnd - ritaStart) * pxPerMs;
-                ctx.fillStyle = seg.färg;
-                ctx.fillRect(x, y - 10, w, 20);
-                if (seg.färg === "#0f0") {
-                    passPositions.push({
-                        id: pågåendePass.id,
-                        xStart: x,
-                        yStart: y - 10,
-                        bredd: w,
-                        höjd: 20,
-                    });
-                }
-                if (pågåendePass.id === markeratPassId && blinkState) {
-                    ctx.strokeStyle = "red";
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(x, y - 10, w, 20);
-                }
-            });
-        });
-    }
+    
 
     function slåIhopÖverlappandePass(passen) {
         if (passen.length === 0) return [];
@@ -571,6 +528,52 @@ rensainmatning();
         return nuMinus24hMs;
     }
 
+    function beräknaNuvarandeArbetstid(sorter){
+        const now = new Date();
+        let totalArbetstid = 0;
+        // const tStart = now.getTime() - 24 * 3600 * 1000;
+        
+        const arbetstidStartTime = beräknaArbetstidStart(now, sorter);
+
+        const passInomFönster = sorter
+            .filter((p) => p.slut.getTime() > arbetstidStartTime && p.start.getTime() < now.getTime())
+            .map((p) => ({
+                start: new Date(Math.max(p.start.getTime(), arbetstidStartTime)),
+                slut: new Date(Math.min(p.slut.getTime(), now.getTime())),
+            }));
+        
+        const hopslagnaPass = slåIhopÖverlappandePass(passInomFönster);
+        totalArbetstid = hopslagnaPass.reduce((summa, p) => summa + (p.slut - p.start), 0);
+        
+        const vilor = [];
+        if (sorter.length > 0) {
+            const senastSlutnaPass = sorter[sorter.length - 1];
+            if (now > senastSlutnaPass.slut) {
+                vilor.push({ start: senastSlutnaPass.slut, slut: now });
+            }
+        }
+        for (let i = 0; i < sorter.length - 1; i++) {
+            const end = sorter[i].slut.getTime();
+            const nextStart = sorter[i + 1].start.getTime();
+            if (nextStart > end) {
+                vilor.push({ start: new Date(end), slut: new Date(nextStart) });
+            }
+        }
+
+        // Lägg till korta vilor (< 2h) som arbetstid
+        for (const vila of vilor) {
+            const vilaLängd = vila.slut.getTime() - vila.start.getTime();
+            if (vilaLängd > 0 && vilaLängd < 2 * 3600 * 1000) {
+                const start = Math.max(vila.start.getTime(), arbetstidStartTime);
+                const slut = Math.min(vila.slut.getTime(), now.getTime());
+                if (slut > start) {
+                    totalArbetstid += slut - start;
+                }
+            }
+        }
+        
+       return totalArbetstid;
+    }
 
     function rita() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -819,7 +822,7 @@ rensainmatning();
             return (h > 0 ? h + "h " : "") + m.toString().padStart(2, "0") + "m";
         }
         document.getElementById("status").textContent =
-            "Arbetstid från FDPStart till NU: " + msTillText(totalArbetstid) 
+            "Arbetstid från FDP start: " + msTillText(totalArbetstid) 
     }
 /**
  * Kontrollerar om det finns minst 8 timmar total vila OCH 
@@ -890,11 +893,13 @@ function kontrolleraVila24h(slutTid, allaPass) {
     // Spara pass-arrayen som gav 15h, för att kunna kolla 24h-vilan bakåt
     let simuleradePassVidFDPMax = []; 
 
+    let datumEnTimmeFramåt = new Date(nu.getTime() + 1 * 60 * 60 * 1000);
+    
     // Går inte längre än 15h + 60m 
     for (let i = 0; i <= 15 * 60 + 60; i++) {
-        const slutTid = new Date(nu.getTime() + i * 60000); 
+        const slutTid = new Date(datumEnTimmeFramåt.getTime() + i * 60000); 
         const simulerade = [...sorter];
-        const simuleratPass = { start: nu, slut: slutTid };
+        const simuleratPass = { start: datumEnTimmeFramåt, slut: slutTid };
         
         const överlappar = sorter.some(p => !(p.slut <= simuleratPass.start || p.start >= simuleratPass.slut));
         if (!överlappar) simulerade.push(simuleratPass);
@@ -917,7 +922,6 @@ function kontrolleraVila24h(slutTid, allaPass) {
 
         if (i === 0) {
             arbetstidStartAktuell = arbetstidStart;
-            aktuellFDPStart = arbetstidStart;
         }
         
         // Kalkylera faktisk FDP-tid
@@ -975,21 +979,25 @@ function kontrolleraVila24h(slutTid, allaPass) {
                 break; // Stanna när en giltig tidpunkt hittas
             }
         }
+    
+        let nuvarandeArbetstid = beräknaNuvarandeArbetstid(sorter) / 1000 / 60;
+        let maxArbetstid = 15 * 60;
+        let kvarvarandeTid = maxArbetstid - nuvarandeArbetstid;
         
+        kvarvarandeTid = Math.round(kvarvarandeTid);
+
         if (hittadVila) {
             // FDP-max *justeras* nu till den tidpunkt där 24h-vilan var uppfylld.
             // Den maximala tiden du kan arbeta är begränsad av den tidpunkt då 24h-vilan SENAST var uppfylld.
             
             // Om 24h-vilan var uppfylld vid FDP Max-tiden (b=0), använder vi FDP Max-utskriften
             if (backupMinutes === 0) {
-                skrivFDPResultat(`FDP max 15h nås efter ${formatTidText(fdpMaxSimuleradeMinuter)} kl ${fdpMaxTid.toTimeString().slice(0, 5)}`);
+                skrivFDPResultat(`FDP max 15h nås efter ${formatTidText(kvarvarandeTid)} kl ${fdpMaxTid.toTimeString().slice(0, 5)}`);
             } else {
-                 // FDP max måste backas till resultatTid (den första giltiga tiden).
-                const fdpBegränsadTidMins = fdpMaxSimuleradeMinuter - backupMinutes;
-                const fdpBegränsadTid = formatTidText(fdpBegränsadTidMins);
-                
                 // Använd din önskade utskriftsstruktur:
-                skrivFDPResultat(`Saknar >4h vila från kl ${resultatTid.toTimeString().slice(0, 5)}`);
+                // Lägg till en minut för att rätta resultat tiden från XX:59 till XX:00
+                let resultatTidPlus1min = new Date(resultatTid.getTime() + 60 * 1000)
+                skrivFDPResultat(`Saknar >4h vila från kl ${resultatTidPlus1min.toTimeString().slice(0, 5)}`);
             }
         } else {
              // Om vi backar 24h och fortfarande inte hittar en giltig 24h vila, är situationen oregelbunden.
@@ -998,11 +1006,7 @@ function kontrolleraVila24h(slutTid, allaPass) {
 
     } 
 }
-    function formatTidText(mins) {
-        const h = Math.floor(mins / 60);
-        const m = mins % 60;
-        return `${h}h ${m.toString().padStart(2, "0")}m`;
-    }
+  
     
     // Flytta uppdatera-funktionen till slutet
     function uppdatera() {
