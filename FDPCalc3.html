@@ -735,16 +735,14 @@ function formatTidText(mins) {
         ctx.moveTo(xNow, 40);
         ctx.lineTo(xNow, 220);
         ctx.stroke();
-
-        let totalArbetstid = 0;
-        let totalVilotid = 0;
-        const tStart = now.getTime() - 24 * 3600 * 1000;
+       
         
         // NY LOGIK: Beräkna arbetstidStart
         const arbetstidStartTime = beräknaArbetstidStart(now, sorter);
 
         // NYTT: Markera ArbetstidStart-linjen på rätt linjal
-        if (arbetstidStartTime > tStart && arbetstidStartTime < now.getTime()) {
+        if (arbetstidStartTime > now.getTime() - 24 * 3600 * 1000 &&
+    arbetstidStartTime < now.getTime()) {
             
             // Hitta vilken linjal FDP Start ligger på
             const FDPStart = new Date(arbetstidStartTime);
@@ -784,36 +782,7 @@ function formatTidText(mins) {
             ctx.fillText(`FDPStart: ${datum.toTimeString().slice(0, 5)}`, xArbetstidStart, yArbetstidStart - targetLinjal.height / 2 - 25);
         }
 
-        const passInomFönster = sorter
-            .filter((p) => p.slut.getTime() > arbetstidStartTime && p.start.getTime() < now.getTime())
-            .map((p) => ({
-                start: new Date(Math.max(p.start.getTime(), arbetstidStartTime)),
-                slut: new Date(Math.min(p.slut.getTime(), now.getTime())),
-            }));
-        const hopslagnaPass = slåIhopÖverlappandePass(passInomFönster);
-        totalArbetstid = hopslagnaPass.reduce((summa, p) => summa + (p.slut - p.start), 0);
         
-        // Lägg till korta vilor (< 2h) som arbetstid
-        for (const vila of vilor) {
-            const vilaLängd = vila.slut.getTime() - vila.start.getTime();
-            if (vilaLängd > 0 && vilaLängd < 2 * 3600 * 1000) {
-                const start = Math.max(vila.start.getTime(), arbetstidStartTime);
-                const slut = Math.min(vila.slut.getTime(), now.getTime());
-                if (slut > start) {
-                    totalArbetstid += slut - start;
-                }
-            }
-        }
-        
-        // Beräkna totalVilotid (24h)
-        for (const vila of vilor) {
-            const start = Math.max(vila.start.getTime(), tStart);
-            const slut = Math.min(vila.slut.getTime(), now.getTime());
-            const längd = slut - start;
-            if (slut > start && längd >= 2 * 3600 * 1000) {
-                totalVilotid += längd;
-            }
-        }
 
         function msTillText(ms) {
             const totS = Math.floor(ms / 1000);
@@ -821,6 +790,7 @@ function formatTidText(mins) {
             const m = Math.floor((totS % 3600) / 60);
             return (h > 0 ? h + "h " : "") + m.toString().padStart(2, "0") + "m";
         }
+        let totalArbetstid = beräknaNuvarandeArbetstid(sorter);
         document.getElementById("status").textContent =
             "Arbetstid från FDP start: " + msTillText(totalArbetstid) 
     }
@@ -893,17 +863,31 @@ function kontrolleraVila24h(slutTid, allaPass) {
     // Spara pass-arrayen som gav 15h, för att kunna kolla 24h-vilan bakåt
     let simuleradePassVidFDPMax = []; 
 
-    let datumEnTimmeFramåt = new Date(nu.getTime() + 1 * 60 * 60 * 1000);
-    
-    // Går inte längre än 15h + 60m 
-    for (let i = 0; i <= 15 * 60 + 60; i++) {
-        const slutTid = new Date(datumEnTimmeFramåt.getTime() + i * 60000); 
-        const simulerade = [...sorter];
-        const simuleratPass = { start: datumEnTimmeFramåt, slut: slutTid };
-        
-        const överlappar = sorter.some(p => !(p.slut <= simuleratPass.start || p.start >= simuleratPass.slut));
-        if (!överlappar) simulerade.push(simuleratPass);
-        simulerade.sort((a, b) => a.start - b.start);
+   // Starta simuleringen från NU
+let datumStartSimulering = new Date(nu.getTime());
+
+for (let i = 0; i <= 15 * 60 + 60; i++) {
+
+    const slutTid =
+        new Date(datumStartSimulering.getTime() + i * 60000);
+
+    const simulerade = [...sorter];
+
+    const simuleratPass = {
+        start: datumStartSimulering,
+        slut: slutTid
+    };
+
+    const överlappar = sorter.some(p =>
+        !(p.slut <= simuleratPass.start ||
+          p.start >= simuleratPass.slut)
+    );
+
+    if (!överlappar) simulerade.push(simuleratPass);
+
+    simulerade.sort((a, b) => a.start - b.start);
+
+  
         
         // Beräkna vilor (behövs främst för 2h-regeln nedan)
         let vilor = [];
