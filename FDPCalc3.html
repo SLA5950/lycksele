@@ -976,8 +976,9 @@ for (let i = 0; i <= 15 * 60 + 60; i++) {
             
             // Om 24h-vilan var uppfylld vid FDP Max-tiden (b=0), använder vi FDP Max-utskriften
             if (backupMinutes === 0) {
-            const visadTid = new Date(fdpMaxTid.getTime() - 60 * 60 * 1000);
-                skrivFDPResultat(`FDP max 15h nås efter ${formatTidText(kvarvarandeTid)} kl ${visadTid.toTimeString().slice(0, 5)}`);
+    skrivFDPResultat(
+        `FDP max 15h nås efter ${formatTidText(kvarvarandeTid)} kl ${fdpMaxTid.toTimeString().slice(0, 5)}`
+    );
             } else {
                 // Använd din önskade utskriftsstruktur:
                 // Lägg till en minut för att rätta resultat tiden från XX:59 till XX:00
