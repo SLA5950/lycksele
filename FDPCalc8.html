@@ -148,17 +148,7 @@
         <span>Vila ≥ 8h (FDP reset)</span>
     </div>
 
-    <div style="display:flex;align-items:center;margin:6px 0;">
-        <div style="
-            width:3px;
-            height:18px;
-            background:red;
-            margin-right:10px;
-        "></div>
-
-        <span>NU och NU-24h</span>
-    </div>
-
+   
     <div style="display:flex;align-items:center;margin:6px 0;">
         <div style="
             width:3px;
@@ -185,7 +175,7 @@
 //////////////////////////////////////////////////////////////
 // GLOBALT
 //////////////////////////////////////////////////////////////
-
+const DEFAULT_PASS_ID = "DEFAULT_PASS";
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
@@ -203,7 +193,21 @@ const btnStartStopSet = document.getElementById("btnStartStopSet");
 //////////////////////////////////////////////////////////////
 // UTIL
 //////////////////////////////////////////////////////////////
+function säkerställDefaultPass() {
 
+    const finns = arbetspass.some(p => p.id === DEFAULT_PASS_ID);
+
+    if (!finns) {
+
+        arbetspass.push({
+            id: DEFAULT_PASS_ID,
+            start: new Date(2026, 0, 1, 4, 0),
+            slut: new Date(2026, 0, 1, 5, 0)
+        });
+
+        sparaPass();
+    }
+}
 function genereraId(){
     return "_" + Math.random().toString(36).substr(2,9);
 }
@@ -384,8 +388,14 @@ function taBortPass(){
 
     if(!markeratPassId) return;
 
+    // blockera default
+    if (markeratPassId === DEFAULT_PASS_ID) {
+        alert("Detta pass kan inte tas bort");
+        return;
+    }
+
     arbetspass =
-        arbetspass.filter(p=>p.id !== markeratPassId);
+        arbetspass.filter(p => p.id !== markeratPassId);
 
     sparaPass();
 
@@ -1524,7 +1534,7 @@ canvas.addEventListener("click",e=>{
 //////////////////////////////////////////////////////////////
 
 laddaFrånMinne();
-
+säkerställDefaultPass();
 uppdateraKnappar();
 
 uppdatera();
