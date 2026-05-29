@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FDP</title>
+
+<style>
+    body{
+        background:#111;
+        color:#eee;
+        font-family:sans-serif;
+        text-align:center;
+        margin:10px;
+        padding:10px;
+    }
+
+    canvas{
+        width:100%;
+        max-width:1000px;
+        height:auto;
+        border:1px solid #444;
+        background:#222;
+        margin:10px auto;
+        display:block;
+        cursor:pointer;
+    }
+
+    input,button{
+        font-size:1em;
+        margin:5px;
+        padding:6px 8px;
+        max-width:90vw;
+    }
+
+    #status{
+        margin-top:10px;
+        font-weight:bold;
+    }
+
+    #fdpResult{
+        margin-top:8px;
+        font-weight:bold;
+        color:orange;
+    }
+
+    button.knapp-grön{
+        background:#0a0 !important;
+        color:#fff !important;
+        border:none;
+    }
+
+    button.knapp-röd{
+        background:#a00 !important;
+        color:#fff !important;
+        border:none;
+    }
+</style>
+</head>
+
+<body>
+
+<div>
+    <div style="white-space: nowrap; display: inline-block; margin-right: 1em;">
+        Starttid:
+        <input type="datetime-local" id="start" />
+    </div>
+
+    <div style="white-space: nowrap; display: inline-block; margin-right: 1em;">
+        Sluttid:
+        <input type="datetime-local" id="slut" />
+    </div>
+
+    <button onclick="läggTillEllerUppdateraPass()">Add/Uppdatera</button>
+    <button id="btnTaBort" onclick="taBortPass()" disabled>Delete pass</button>
+    <button id="btnStartStop" onclick="startaEllerStoppaPass()">Starta pass</button>
+    <button id="btnStartStopSet" onclick="startaEllerStoppaMedSet()">Start SET</button>
+    <button id="resetStorageBtn">Nollställ</button>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<div id="status"></div>
+<div id="fdpResult"></div>
+
+<div id="legend"
+     style="
+        margin-top:15px;
+        text-align:left;
+        max-width:1000px;
+        margin-left:auto;
+        margin-right:auto;
+        font-size:14px;
+     ">
+
+    <div style="display:flex;align-items:center;margin:6px 0;">
+        <div style="
+            width:40px;
+            height:12px;
+            background:#0f0;
+            margin-right:10px;
+        "></div>
+
+        <span>Arbetspass</span>
+    </div>
+
+    <div style="display:flex;align-items:center;margin:6px 0;">
+        <div style="
+            width:40px;
+            height:4px;
+            background:#0f0;
+            margin-right:10px;
+        "></div>
+
+        <span>Vila &lt; 2h (räknas som arbete)</span>
+    </div>
+
+    <div style="display:flex;align-items:center;margin:6px 0;">
+        <div style="
+            width:40px;
+            height:6px;
+            background:#88f;
+            margin-right:10px;
+        "></div>
+
+        <span>Vila 2h - 4h</span>
+    </div>
+
+    <div style="display:flex;align-items:center;margin:6px 0;">
+        <div style="
+            width:40px;
+            height:10px;
+            background:#00f;
+            margin-right:10px;
+        "></div>
+
+        <span>Vila 4h - 8h</span>
+    </div>
+
+    <div style="display:flex;align-items:center;margin:6px 0;">
+        <div style="
+            width:40px;
+            height:10px;
+            background:yellow;
+            margin-right:10px;
+        "></div>
+
+        <span>Vila ≥ 8h (FDP reset)</span>
+    </div>
+
+    <div style="display:flex;align-items:center;margin:6px 0;">
+        <div style="
+            width:3px;
+            height:18px;
+            background:red;
+            margin-right:10px;
+        "></div>
+
+        <span>NU och NU-24h</span>
+    </div>
+
+    <div style="display:flex;align-items:center;margin:6px 0;">
+        <div style="
+            width:3px;
+            height:18px;
+            background:magenta;
+            margin-right:10px;
+        "></div>
+
+        <span>FDP start</span>
+    </div>
+
+    <div style="
+        margin-top:16px;
+        color:#666;
+        font-size:13px;
+    ">
+        Copyright Ove Lundström © FDPcalc 4.0
+    </div>
+
+</div>
+
+<script>
+
+//////////////////////////////////////////////////////////////
+// GLOBALT
+//////////////////////////////////////////////////////////////
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let arbetspass = [];
+let passPositions = [];
+
+let markeratPassId = null;
+let redigerarIndex = -1;
+
+let pågåendePass = null;
+
+const btnStartStop = document.getElementById("btnStartStop");
+const btnStartStopSet = document.getElementById("btnStartStopSet");
+
+//////////////////////////////////////////////////////////////
+// UTIL
+//////////////////////////////////////////////////////////////
+
+function genereraId(){
+    return "_" + Math.random().toString(36).substr(2,9);
+}
+
+function localDatetimeString(date){
+    const pad = n => n.toString().padStart(2,"0");
+
+    return date.getFullYear() + "-" +
+        pad(date.getMonth()+1) + "-" +
+        pad(date.getDate()) + "T" +
+        pad(date.getHours()) + ":" +
+        pad(date.getMinutes());
+}
+
+function parseLocalDatetime(s){
+    if(!s) return null;
+
+    const [datePart,timePart] = s.split("T");
+
+    const [year,month,day] =
+        datePart.split("-").map(Number);
+
+    const [hour,minute] =
+        timePart.split(":").map(Number);
+
+    return new Date(year,month-1,day,hour,minute);
+}
+
+function msTillText(ms){
+
+    const totalMin = Math.floor(ms / 60000);
+
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+
+    return `${h}h ${m.toString().padStart(2,"0")}m`;
+}
+
+function skrivFDPResultat(text){
+    document.getElementById("fdpResult").textContent = text;
+}
+
+//////////////////////////////////////////////////////////////
+// LOCAL STORAGE
+//////////////////////////////////////////////////////////////
+
+document.getElementById("resetStorageBtn")
+.addEventListener("click",()=>{
+
+    localStorage.clear();
+
+    alert("Minne nollställt");
+
+    location.reload();
+});
+
+function laddaFrånMinne(){
+
+    const sparade = localStorage.getItem("arbetspass");
+
+    if(sparade){
+
+        arbetspass = JSON.parse(sparade).map(p=>({
+
+            id:p.id || genereraId(),
+            start:new Date(p.start),
+            slut:new Date(p.slut)
+
+        }));
+    }
+
+    const pågående = localStorage.getItem("pågåendePass");
+
+    if(pågående){
+
+        const p = JSON.parse(pågående);
+
+        pågåendePass = {
+
+            id:p.id,
+            start:new Date(p.start)
+        };
+    }
+}
+
+function sparaPass(){
+
+    localStorage.setItem(
+        "arbetspass",
+        JSON.stringify(arbetspass)
+    );
+}
+
+//////////////////////////////////////////////////////////////
+// KNAPPAR
+//////////////////////////////////////////////////////////////
+
+function uppdateraKnappar(){
+
+    if(pågåendePass){
+
+        btnStartStop.textContent = "Stoppa pass";
+        btnStartStop.className = "knapp-grön";
+
+        btnStartStopSet.textContent = "S+30";
+        btnStartStopSet.className = "knapp-grön";
+
+    }else{
+
+        btnStartStop.textContent = "Starta pass";
+        btnStartStop.className = "knapp-röd";
+
+        btnStartStopSet.textContent = "Start SET";
+        btnStartStopSet.className = "knapp-röd";
+    }
+}
+
+//////////////////////////////////////////////////////////////
+// PASS HANTERING
+//////////////////////////////////////////////////////////////
+
+function läggTillEllerUppdateraPass(){
+
+    const s = parseLocalDatetime(
+        document.getElementById("start").value
+    );
+
+    const e = parseLocalDatetime(
+        document.getElementById("slut").value
+    );
+
+    if(!s || !e){
+
+        alert("Fyll i tider");
+        return;
+    }
+
+    if(e <= s){
+
+        alert("Slut måste vara efter start");
+        return;
+    }
+
+    if(redigerarIndex >= 0){
+
+        arbetspass[redigerarIndex].start = s;
+        arbetspass[redigerarIndex].slut = e;
+
+    }else{
+
+        arbetspass.push({
+
+            id:genereraId(),
+            start:s,
+            slut:e
+        });
+    }
+
+    sparaPass();
+
+    rensaInmatning();
+
+    uppdatera();
+}
+
+function rensaInmatning(){
+
+    document.getElementById("start").value = "";
+    document.getElementById("slut").value = "";
+
+    redigerarIndex = -1;
+    markeratPassId = null;
+
+    document.getElementById("btnTaBort").disabled = true;
+}
+
+function taBortPass(){
+
+    if(!markeratPassId) return;
+
+    arbetspass =
+        arbetspass.filter(p=>p.id !== markeratPassId);
+
+    sparaPass();
+
+    rensaInmatning();
+
+    uppdatera();
+}
+
+//////////////////////////////////////////////////////////////
+// START STOP
+//////////////////////////////////////////////////////////////
+
+function startaEllerStoppaPass(){
+
+    const nu = new Date();
+
+    if(!pågåendePass){
+
+        pågåendePass = {
+
+            id:genereraId(),
+            start:nu
+        };
+
+        localStorage.setItem(
+            "pågåendePass",
+            JSON.stringify(pågåendePass)
+        );
+
+    }else{
+
+        pågåendePass.slut = nu;
+
+        arbetspass.push(pågåendePass);
+
+        sparaPass();
+
+        localStorage.removeItem("pågåendePass");
+
+        pågåendePass = null;
+    }
+
+    uppdateraKnappar();
+
+    uppdatera();
+}
+
+function startaEllerStoppaMedSet(){
+
+    if(!pågåendePass){
+
+        const starttid =
+            parseLocalDatetime(
+                document.getElementById("start").value
+            );
+
+        if(!starttid){
+
+            alert("Ogiltig starttid");
+            return;
+        }
+
+        pågåendePass = {
+
+            id:genereraId(),
+            start:starttid
+        };
+
+        localStorage.setItem(
+            "pågåendePass",
+            JSON.stringify(pågåendePass)
+        );
+
+    }else{
+
+        pågåendePass.slut =
+            new Date(Date.now() + 30*60000);
+
+        arbetspass.push(pågåendePass);
+
+        sparaPass();
+
+        localStorage.removeItem("pågåendePass");
+
+        pågåendePass = null;
+    }
+
+    uppdateraKnappar();
+
+    uppdatera();
+}
+
+function harMinstEn4hVila(vilor){
+
+    const FYRAH = 4 * 3600 * 1000;
+
+    return vilor.some(v => {
+        const vilaTid = v.slut - v.start;
+        return vilaTid >= FYRAH;
+    });
+}
+//////////////////////////////////////////////////////////////
+// DEN ENDA FDP BERÄKNINGEN
+//////////////////////////////////////////////////////////////
+
+function beräknaFDP(now, pass){
+
+    const H = 3600 * 1000;
+
+    const MIN_VILA = 2 * H;
+    const RESET = 8 * H;
+    
+
+   //////////////////////////////////////////////////////
+// 1. SORTERA PASS
+//////////////////////////////////////////////////////
+
+const sorter = [...pass]
+    .filter(p => p.slut > p.start)
+    .sort((a,b)=>a.start-b.start);
+    //////////////////////////////////////////////////////
+    // 2. BYGG DUTY (vila <2h = arbete)
+    //////////////////////////////////////////////////////
+
+    const duty = [];
+
+    for(let i=0;i<sorter.length;i++){
+
+        const p = sorter[i];
+
+        if(duty.length === 0){
+            duty.push({
+                start: new Date(p.start),
+                slut: new Date(p.slut)
+            });
+            continue;
+        }
+
+        const prev = duty[duty.length - 1];
+
+        const gap =
+            p.start.getTime() - prev.slut.getTime();
+
+        if(gap < MIN_VILA){
+            prev.slut = new Date(
+                Math.max(prev.slut.getTime(), p.slut.getTime())
+            );
+        }else{
+            duty.push({
+                start: new Date(p.start),
+                slut: new Date(p.slut)
+            });
+        }
+    }
+//////////////////////////////////////////////////////
+// 2.5 NU-gap <2h = arbete
+//////////////////////////////////////////////////////
+
+if(duty.length){
+
+    const last = duty[duty.length - 1];
+
+    const gapToNow =
+        now.getTime() - last.slut.getTime();
+
+    if(gapToNow < MIN_VILA){
+
+        // förläng duty till NU
+        last.slut = new Date(now);
+    }
+}
+    //////////////////////////////////////////////////////
+    // 3. BYGG VILOR
+    //////////////////////////////////////////////////////
+
+    const vilor = [];
+
+    for(let i=0;i<sorter.length-1;i++){
+
+        vilor.push({
+            start: new Date(sorter[i].slut),
+            slut: new Date(sorter[i+1].start)
+        });
+    }
+
+    if(sorter.length){
+
+    const sistaPass =
+        sorter[sorter.length - 1];
+
+    if(now.getTime() > sistaPass.slut.getTime()){
+
+        vilor.push({
+
+            start: new Date(sistaPass.slut),
+            slut: new Date(now)
+        });
+    }
+}
+
+  //////////////////////////////////////////////////////
+// 4. BERÄKNA FDP START
+//////////////////////////////////////////////////////
+
+let fdpStart = new Date(now);
+let frånSammanhängande8h = false;
+
+//////////////////////////////////////////////////////
+// A.
+// SENASTE SAMMANHÄNGANDE VILA >=8h
+//////////////////////////////////////////////////////
+
+for(let i = vilor.length - 1; i >= 0; i--){
+
+    const v = vilor[i];
+
+    const vilaMs =
+        v.slut.getTime() -
+        v.start.getTime();
+
+    if(vilaMs >= RESET){
+
+        //////////////////////////////////////////////////
+        // FDP start = första duty efter vilan
+        //////////////////////////////////////////////////
+
+        for(const d of duty){
+
+            if(d.start.getTime() >= v.slut.getTime()){
+
+                fdpStart =
+    new Date(d.start);
+
+frånSammanhängande8h = true;
+
+                break;
+            }
+        }
+
+        break;
+    }
+}
+
+//////////////////////////////////////////////////////
+// B.
+// SPLIT DUTY
+//////////////////////////////////////////////////////
+
+const giltigaVilor = vilor.filter(v =>
+    (v.slut - v.start) >= MIN_VILA
+);
+
+//////////////////////////////////////////////////////
+// TESTA ALLA MÖJLIGA FDPSTART
+//////////////////////////////////////////////////////
+
+for(const huvudblock of giltigaVilor){
+
+    const huvudStart =
+        huvudblock.start.getTime();
+
+    const huvudSlut =
+        huvudblock.slut.getTime();
+
+    //////////////////////////////////////////////////
+    // gå minutvis genom blocket
+    //////////////////////////////////////////////////
+
+    for(
+        let kandidatTid = huvudStart;
+        kandidatTid <= huvudSlut;
+        kandidatTid += 60 * 1000
+    ){
+
+        let totalVila = 0;
+        let har4hBlock = false;
+
+        //////////////////////////////////////////////////
+        // summera vila kandidat -> NU
+        //////////////////////////////////////////////////
+
+        for(const v of giltigaVilor){
+
+            const s = Math.max(
+                v.start.getTime(),
+                kandidatTid
+            );
+
+            const e = Math.min(
+                v.slut.getTime(),
+                now.getTime()
+            );
+
+            if(e <= s) continue;
+
+            const vilaMs = e - s;
+
+            totalVila += vilaMs;
+
+            //////////////////////////////////////////////////
+            // minst ett kvarvarande block >=4h
+            //////////////////////////////////////////////////
+
+            if(vilaMs >= 4 * H){
+                har4hBlock = true;
+            }
+        }
+
+        //////////////////////////////////////////////////
+        // giltig FDPstart
+        //////////////////////////////////////////////////
+
+        if(
+    totalVila >= RESET &&
+    har4hBlock
+){
+
+    if(
+        kandidatTid >
+        fdpStart.getTime()
+    ){
+
+        //////////////////////////////////////////////////
+        // split duty gav senare FDPstart
+        //////////////////////////////////////////////////
+
+        fdpStart =
+            new Date(kandidatTid);
+
+        frånSammanhängande8h = false;
+    }
+}
+    }
+}
+    //////////////////////////////////////////////////////
+    // 5. RÄKNA ARBETSTID INOM FDP WINDOW
+    //////////////////////////////////////////////////////
+
+    let arbetstidMs = 0;
+
+    for(const d of duty){
+
+        const s = Math.max(d.start.getTime(), fdpStart.getTime());
+        const e = Math.min(d.slut.getTime(), now.getTime());
+
+        if(e > s){
+            arbetstidMs += (e - s);
+        }
+    }
+
+    //////////////////////////////////////////////////////
+    // 6. RETURN (VIKTIGT)
+    //////////////////////////////////////////////////////
+
+    return {
+    duty,
+    vilor,
+    fdpStart,
+    arbetstidMs,
+    frånSammanhängande8h
+};
+}
+   function uppfyllerViloregler(pass, endTime){
+
+    const WINDOW = 24 * 3600 * 1000;
+
+    const windowStart =
+        endTime.getTime() - WINDOW;
+
+    //////////////////////////////////////////////////////
+    // KLIPP PASS TILL 24h WINDOW
+    //////////////////////////////////////////////////////
+
+    const klippta = [];
+
+    for(const p of pass){
+
+        const s =
+            Math.max(
+                p.start.getTime(),
+                windowStart
+            );
+
+        const e =
+            Math.min(
+                p.slut.getTime(),
+                endTime.getTime()
+            );
+
+        if(e > s){
+
+            klippta.push({
+
+                start:new Date(s),
+                slut:new Date(e)
+            });
+        }
+    }
+
+    //////////////////////////////////////////////////////
+    // SORTERA
+    //////////////////////////////////////////////////////
+
+    klippta.sort((a,b)=>a.start-b.start);
+
+    //////////////////////////////////////////////////////
+    // BYGG VILOR
+    //////////////////////////////////////////////////////
+
+    let totalVila = 0;
+    let har4h = false;
+
+    let cursor = windowStart;
+
+    for(const p of klippta){
+
+        const vila =
+            p.start.getTime() - cursor;
+
+        if(vila > 0){
+
+            totalVila += vila;
+
+            if(vila >= 4*3600*1000){
+                har4h = true;
+            }
+        }
+
+        cursor =
+            Math.max(
+                cursor,
+                p.slut.getTime()
+            );
+    }
+
+    //////////////////////////////////////////////////////
+    // SISTA VILAN
+    //////////////////////////////////////////////////////
+
+    const sistaVila =
+        endTime.getTime() - cursor;
+
+    if(sistaVila > 0){
+
+        totalVila += sistaVila;
+
+        if(sistaVila >= 4*3600*1000){
+            har4h = true;
+        }
+    }
+
+    //////////////////////////////////////////////////////
+    // RESULTAT
+    //////////////////////////////////////////////////////
+
+    return {
+
+        ok:
+            totalVila >= 8*3600*1000
+            &&
+            har4h,
+
+        totalVila,
+        har4h
+    };
+}
+function hittaVilobrottTid(now, pass){
+
+    const STEP = 5 * 60 * 1000;
+
+    for(
+        let t = now.getTime();
+        t < now.getTime() + 48*3600*1000;
+        t += STEP
+    ){
+
+        //////////////////////////////////////////////////
+        // SIMULERA KONTINUERLIGT ARBETE
+        //////////////////////////////////////////////////
+
+        const simPass = [
+
+            ...pass,
+
+            {
+                start:new Date(now),
+                slut:new Date(t)
+            }
+        ];
+
+        const check =
+            uppfyllerViloregler(
+                simPass,
+                new Date(t)
+            );
+
+        if(!check.ok){
+
+            return new Date(t);
+        }
+    }
+
+    return null;
+}
+//////////////////////////////////////////////////////////////
+// CANVAS
+//////////////////////////////////////////////////////////////
+
+function storleksanpassaCanvas(){
+
+    canvas.width = canvas.clientWidth;
+    canvas.height = 240;
+}
+
+function nollställTid(date){
+
+    return new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+    );
+}
+
+function formatDatum(date){
+
+    const m =
+        (date.getMonth()+1)
+        .toString()
+        .padStart(2,"0");
+
+    const d =
+        date.getDate()
+        .toString()
+        .padStart(2,"0");
+
+    return m + d;
+}
+
+function rita(){
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    const now = new Date();
+
+    //////////////////////////////////////////////////////////
+    // FDP
+    //////////////////////////////////////////////////////////
+
+    let allaPass = [...arbetspass];
+
+if(pågåendePass){
+
+    allaPass.push({
+
+        id:pågåendePass.id,
+        start:pågåendePass.start,
+        slut:now
+    });
+}
+
+const fdpState =
+    beräknaFDP(now,allaPass);
+const vilor = fdpState.vilor;
+const duty = fdpState.duty;
+    //////////////////////////////////////////////////////////
+// NÄR NÅR MAN 15h FDP DUTY
+//////////////////////////////////////////////////////////
+
+const MAX_FDP = 15 * 3600 * 1000;
+
+const kvarMs =
+    MAX_FDP - fdpState.arbetstidMs;
+
+const når15h =
+    new Date(now.getTime() + kvarMs);
+
+const hh15 =
+    når15h.getHours()
+    .toString()
+    .padStart(2,"0");
+
+const mm15 =
+    når15h.getMinutes()
+    .toString()
+    .padStart(2,"0");
+
+document.getElementById("status").textContent =
+    "FDP duty: " +
+    msTillText(fdpState.arbetstidMs) +
+    ",   15h nås: " +
+    hh15 + ":" + mm15;
+
+
+   
+//////////////////////////////////////////////////////////
+// FDP MAX TID
+//////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////
+// VILOBROTT = FDPSTART + 24h
+//////////////////////////////////////////////////////////
+
+let brottTid;
+
+if(fdpState.frånSammanhängande8h){
+
+    //////////////////////////////////////////////////////
+    // 4h-blocket försvinner 4h före FDPstart+24h
+    //////////////////////////////////////////////////////
+
+    brottTid = new Date(
+        fdpState.fdpStart.getTime() +
+        20 * 3600 * 1000
+    );
+
+}else{
+
+    //////////////////////////////////////////////////////
+    // split duty
+    //////////////////////////////////////////////////////
+
+    brottTid = new Date(
+        fdpState.fdpStart.getTime() +
+        24 * 3600 * 1000
+    );
+}
+
+const hh =
+    brottTid.getHours()
+    .toString()
+    .padStart(2,"0");
+
+const mm =
+    brottTid.getMinutes()
+    .toString()
+    .padStart(2,"0");
+
+skrivFDPResultat(
+    "Ingen 8h vila (med 4h block) från: "
+    + hh + ":" + mm
+);
+    //////////////////////////////////////////////////////////
+    // TIDSLINJER
+    //////////////////////////////////////////////////////////
+
+    const d0 = nollställTid(now);
+
+    const d24 =
+        new Date(
+            d0.getTime() -
+            24*3600*1000
+        );
+
+    const pxPerMs =
+        canvas.width /
+        (24*3600*1000);
+
+    const linjaler = [
+
+        {
+            label:formatDatum(d24),
+            start:d24,
+            y:70,
+            height:40
+        },
+
+        {
+            label:formatDatum(d0),
+            start:d0,
+            y:170,
+            height:40
+        }
+    ];
+
+    //////////////////////////////////////////////////////////
+    // RITA LINJALER
+    //////////////////////////////////////////////////////////
+
+    ctx.font = "14px monospace";
+
+    linjaler.forEach(l=>{
+
+        ctx.fillStyle = "#333";
+
+        ctx.fillRect(
+            0,
+            l.y - l.height/2,
+            canvas.width,
+            l.height
+        );
+
+        ctx.fillStyle = "#aaa";
+
+        ctx.fillText(l.label, 5, l.y - l.height/2 - 25);
+
+        for(let m=0;m<=48;m++){
+
+    //////////////////////////////////////////////////////
+    // VARJE HALVTIMMA
+    //////////////////////////////////////////////////////
+
+    const timmar = m/2 ;
+
+    const x =
+        (timmar / 24) *
+        canvas.width;
+
+    //////////////////////////////////////////////////////
+    // VERTIKAL LINJE
+    //////////////////////////////////////////////////////
+
+    ctx.strokeStyle = "#555";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        x,
+        l.y - l.height/2
+    );
+
+    ctx.lineTo(
+        x,
+        l.y + l.height/2
+    );
+
+    ctx.stroke();
+
+    //////////////////////////////////////////////////////
+    // TEXT VARANNAN TIMME
+    //////////////////////////////////////////////////////
+
+    if(m % 4 === 0 && timmar < 24){
+
+        const text =
+            Math.floor(timmar)
+            .toString()
+            .padStart(2,"0");
+
+        //////////////////////////////////////////////////
+        // CENTRERA TEXTEN ÖVER LINJEN
+        //////////////////////////////////////////////////
+
+        const textWidth =
+            ctx.measureText(text).width;
+
+        ctx.fillStyle = "#aaa";
+
+        ctx.fillText(
+
+    text,
+
+    x - textWidth/2,
+
+    l.y - l.height/2 - 10
+);
+    }
+}
+    });
+
+//////////////////////////////////////////////////////////////
+// PASS
+//////////////////////////////////////////////////////////////
+
+passPositions = [];
+
+let sorter =
+    [...arbetspass];
+
+if(pågåendePass){
+
+    sorter.push({
+
+        id:pågåendePass.id,
+        start:pågåendePass.start,
+        slut:now
+    });
+}
+
+sorter.sort((a,b)=>a.start-b.start);
+
+sorter.forEach(p=>{
+
+    linjaler.forEach(l=>{
+
+        const linStart =
+            l.start.getTime();
+
+        const linEnd =
+            linStart +
+            24*3600*1000;
+
+        const start =
+            Math.max(
+                p.start.getTime(),
+                linStart
+            );
+
+        const slut =
+            Math.min(
+                p.slut.getTime(),
+                linEnd
+            );
+
+        if(slut <= start) return;
+
+        const x =
+            (start - linStart) *
+            pxPerMs;
+
+        const w =
+            (slut - start) *
+            pxPerMs;
+
+        //////////////////////////////////////////////////////
+        // PASS
+        //////////////////////////////////////////////////////
+
+        ctx.fillStyle = "#0f0";
+
+        ctx.fillRect(
+            x,
+            l.y - 10,
+            w,
+            20
+        );
+
+        //////////////////////////////////////////////////////
+        // SPARA POSITION
+        //////////////////////////////////////////////////////
+
+        passPositions.push({
+
+            id:p.id,
+
+            xStart:x,
+            yStart:l.y - 10,
+
+            bredd:w,
+            höjd:20
+        });
+
+        //////////////////////////////////////////////////////
+        // MARKERING
+        //////////////////////////////////////////////////////
+
+        if(p.id === markeratPassId){
+
+            ctx.strokeStyle = "red";
+
+            ctx.lineWidth = 2;
+
+            ctx.strokeRect(
+                x,
+                l.y - 10,
+                w,
+                20
+            );
+
+            //////////////////////////////////////////////////
+            // PASSLÄNGD
+            //////////////////////////////////////////////////
+
+            const durationMs =
+                p.slut.getTime() -
+                p.start.getTime();
+
+            ctx.fillStyle = "white";
+
+            ctx.font = "12px sans-serif";
+
+            ctx.textAlign = "center";
+
+            ctx.fillText(msTillText(durationMs),
+
+                x + w/2,
+
+                l.y + 35
+            );
+        }
+    });
+});
+//////////////////////////////////////////////////////////////
+// VILOPERIODER
+//////////////////////////////////////////////////////////////
+
+
+vilor.forEach(v=>{
+
+    const vilaTid =
+        v.slut.getTime() -
+        v.start.getTime();
+
+    let färg;
+    let höjd;
+
+    //////////////////////////////////////////////////////////
+    // FÄRGER
+    //////////////////////////////////////////////////////////
+
+   if(vilaTid < 2*3600*1000){
+    färg = "#0f0";
+    höjd = 4;
+}
+
+else if(vilaTid >= 8*3600*1000){
+
+        färg = "yellow";
+        höjd = 10;
+
+    }else if(vilaTid >= 4*3600*1000){
+
+        färg = "#00f";
+        höjd = 8;
+
+    }else if(vilaTid >= 2*3600*1000){
+
+        färg = "#88f";
+        höjd = 6;
+
+    }else{
+
+        färg = "#0f0";
+        höjd = 4;
+    }
+
+    //////////////////////////////////////////////////////////
+    // RITA VILAN
+    //////////////////////////////////////////////////////////
+
+    linjaler.forEach(l=>{
+
+        const linStart =
+            l.start.getTime();
+
+        const linEnd =
+            linStart +
+            24*3600*1000;
+
+        const start =
+            Math.max(
+                v.start.getTime(),
+                linStart
+            );
+
+        const slut =
+            Math.min(
+                v.slut.getTime(),
+                linEnd
+            );
+
+        if(slut <= start) return;
+
+        const x =
+            (start - linStart) *
+            pxPerMs;
+
+        const w =
+            (slut - start) *
+            pxPerMs;
+
+        ctx.fillStyle = färg;
+
+        ctx.fillRect(
+            x,
+            l.y - höjd/2,
+            w,
+            höjd
+        );
+    });
+});    
+//////////////////////////////////////////////////////////
+    // NU-LINJE
+    //////////////////////////////////////////////////////////
+
+    const xNow =
+        (now.getTime() - d0.getTime())
+        * pxPerMs;
+
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+
+    ctx.moveTo(xNow,0);
+
+    ctx.lineTo(xNow,240);
+
+    ctx.stroke();
+//////////////////////////////////////////////////////////
+    // FDP START MARKERING
+    //////////////////////////////////////////////////////////
+
+    const fdpStartDate = fdpState.fdpStart;
+
+    linjaler.forEach(l=>{
+
+        const linStart =
+            l.start.getTime();
+
+        const linEnd =
+            linStart +
+            24*3600*1000;
+
+        if(
+            fdpStartDate.getTime() >= linStart &&
+            fdpStartDate.getTime() <= linEnd
+        ){
+
+            const x =
+                (fdpStartDate.getTime()-linStart)
+                * pxPerMs;
+
+            ctx.strokeStyle = "magenta";
+
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                x,
+                l.y - 20
+            );
+
+            ctx.lineTo(
+                x,
+                l.y + 20
+            );
+
+            ctx.stroke();
+
+            ctx.fillStyle = "magenta";
+
+            ctx.fillText(
+                "FDPStart",
+                x ,
+                l.y + 35
+            );
+        }
+    });
+
+    
+}
+
+//////////////////////////////////////////////////////////////
+// UPDATE LOOP
+//////////////////////////////////////////////////////////////
+
+function uppdatera(){
+
+    storleksanpassaCanvas();
+
+    rita();
+
+    setTimeout(
+        uppdatera,
+        1000
+    );
+}
+//////////////////////////////////////////////////////////////
+// KLICKA PÅ PASS
+//////////////////////////////////////////////////////////////
+
+canvas.addEventListener("click",e=>{
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+    const klickX =
+        e.clientX - rect.left;
+
+    const klickY =
+        e.clientY - rect.top;
+
+    let hittat = false;
+
+    for(const p of passPositions){
+
+        if(
+
+            klickX >= p.xStart &&
+            klickX <= p.xStart + p.bredd &&
+
+            klickY >= p.yStart &&
+            klickY <= p.yStart + p.höjd
+        ){
+
+            markeratPassId = p.id;
+
+            const pass =
+                arbetspass.find(
+                    x=>x.id===p.id
+                );
+
+            if(pass){
+
+                document.getElementById("start").value =
+                    localDatetimeString(pass.start);
+
+                document.getElementById("slut").value =
+                    localDatetimeString(pass.slut);
+
+                redigerarIndex =
+                    arbetspass.findIndex(
+                        x=>x.id===p.id
+                    );
+
+                document.getElementById("btnTaBort")
+                    .disabled = false;
+            }
+
+            hittat = true;
+
+            break;
+        }
+    }
+
+    if(!hittat){
+
+        markeratPassId = null;
+
+        redigerarIndex = -1;
+
+        document.getElementById("btnTaBort")
+            .disabled = true;
+    }
+
+    rita();
+});
+//////////////////////////////////////////////////////////////
+// INIT
+//////////////////////////////////////////////////////////////
+
+laddaFrånMinne();
+
+uppdateraKnappar();
+
+uppdatera();
+</script>
+
+</body>
+</html>)
