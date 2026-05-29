@@ -175,7 +175,7 @@
         color:#666;
         font-size:13px;
     ">
-        Copyright Ove Lundström © FDPcalc 4.0
+        Copyright Ove Lundström © FDPcalc 8.0
     </div>
 
 </div>
@@ -1069,7 +1069,7 @@ skrivFDPResultat(
     // RITA LINJALER
     //////////////////////////////////////////////////////////
 
-    ctx.font = "14px monospace";
+    ctx.font = "16px monospace";
 
     linjaler.forEach(l=>{
 
@@ -1086,13 +1086,13 @@ skrivFDPResultat(
 
         ctx.fillText(l.label, 5, l.y - l.height/2 - 25);
 
-        for(let m=0;m<=48;m++){
+        for(let m=0;m<=24;m++){
 
     //////////////////////////////////////////////////////
-    // VARJE HALVTIMMA
+    // VARJE TIMMA
     //////////////////////////////////////////////////////
 
-    const timmar = m/2 ;
+    const timmar = m ;
 
     const x =
         (timmar / 24) *
@@ -1122,7 +1122,7 @@ skrivFDPResultat(
     // TEXT VARANNAN TIMME
     //////////////////////////////////////////////////////
 
-    if(m % 4 === 0 && timmar < 24){
+    if(m % 2 === 0 && timmar < 24){
 
         const text =
             Math.floor(timmar)
