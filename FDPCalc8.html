@@ -604,6 +604,15 @@ let fdpStart = new Date(now);
 let frånSammanhängande8h = false;
 
 //////////////////////////////////////////////////////
+// INGA PASS = SAMMANHÄNGANDE VILA
+//////////////////////////////////////////////////////
+
+if(sorter.length === 0){
+
+    frånSammanhängande8h = true;
+}
+
+//////////////////////////////////////////////////////
 // A.
 // SENASTE SAMMANHÄNGANDE VILA >=8h
 //////////////////////////////////////////////////////
@@ -1010,30 +1019,8 @@ document.getElementById("status").textContent =
 // VILOBROTT = FDPSTART + 24h
 //////////////////////////////////////////////////////////
 
-let brottTid;
-
-if(fdpState.frånSammanhängande8h){
-
-    //////////////////////////////////////////////////////
-    // 4h-blocket försvinner 4h före FDPstart+24h
-    //////////////////////////////////////////////////////
-
-    brottTid = new Date(
-        fdpState.fdpStart.getTime() +
-        20 * 3600 * 1000
-    );
-
-}else{
-
-    //////////////////////////////////////////////////////
-    // split duty
-    //////////////////////////////////////////////////////
-
-    brottTid = new Date(
-        fdpState.fdpStart.getTime() +
-        24 * 3600 * 1000
-    );
-}
+const brottTid =
+    hittaVilobrottTid(now, allaPass);
 
 const hh =
     brottTid.getHours()
