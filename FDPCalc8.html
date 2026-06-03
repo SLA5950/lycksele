@@ -987,10 +987,17 @@ const mm15 =
     .toString()
     .padStart(2,"0");
 
+const datum15 =
+    (når15h.getMonth()+1).toString().padStart(2,"0") +
+    "-" +
+    når15h.getDate().toString().padStart(2,"0");
+
 document.getElementById("status").textContent =
     "FDP duty: " +
     msTillText(fdpState.arbetstidMs) +
     ",   15h nås: " +
+    datum15 +
+    " " +
     hh15 + ":" + mm15;
 
 
@@ -1038,9 +1045,16 @@ const mm =
     .toString()
     .padStart(2,"0");
 
+const datumBrott =
+    (brottTid.getMonth()+1).toString().padStart(2,"0") +
+    "-" +
+    brottTid.getDate().toString().padStart(2,"0");
+
 skrivFDPResultat(
-    "Ingen 8h vila (med 4h block) från: "
-    + hh + ":" + mm
+    "Ingen 8h vila (med 4h block) från: " +
+    datumBrott +
+    " " +
+    hh + ":" + mm
 );
     //////////////////////////////////////////////////////////
     // TIDSLINJER
