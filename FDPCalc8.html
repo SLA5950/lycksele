@@ -193,6 +193,11 @@ const btnStartStopSet = document.getElementById("btnStartStopSet");
 //////////////////////////////////////////////////////////////
 // UTIL
 //////////////////////////////////////////////////////////////
+function avrundaTillMinut(date){
+    return new Date(
+        Math.floor(date.getTime() / 60000) * 60000
+    );
+}
 function säkerställDefaultPass() {
 
     const finns = arbetspass.some(p => p.id === DEFAULT_PASS_ID);
@@ -273,8 +278,8 @@ function laddaFrånMinne(){
         arbetspass = JSON.parse(sparade).map(p=>({
 
             id:p.id || genereraId(),
-            start:new Date(p.start),
-            slut:new Date(p.slut)
+            start:avrundaTillMinut(new Date(p.start)),
+slut:avrundaTillMinut(new Date(p.slut))
 
         }));
     }
@@ -410,14 +415,14 @@ function taBortPass(){
 
 function startaEllerStoppaPass(){
 
-    const nu = new Date();
+    const nu = avrundaTillMinut(new Date());
 
     if(!pågåendePass){
 
         pågåendePass = {
 
             id:genereraId(),
-            start:nu
+            start:avrundaTillMinut(nu)
         };
 
         localStorage.setItem(
@@ -427,7 +432,7 @@ function startaEllerStoppaPass(){
 
     }else{
 
-        pågåendePass.slut = nu;
+        pågåendePass.slut = avrundaTillMinut(nu);
 
         arbetspass.push(pågåendePass);
 
@@ -500,14 +505,74 @@ function harMinstEn4hVila(vilor){
 //////////////////////////////////////////////////////////////
 // DEN ENDA FDP BERÄKNINGEN
 //////////////////////////////////////////////////////////////
+function byggDuty(pass, now){
 
+    const MIN_VILA = 2 * 3600 * 1000;
+
+ const sorter = [...pass]
+    .filter(p => p.slut > p.start)
+    .map(p => ({
+        ...p,
+        start: avrundaTillMinut(new Date(p.start)),
+        slut: avrundaTillMinut(new Date(p.slut))
+    }))
+    .sort((a,b)=>a.start-b.start);
+
+    const duty = [];
+
+    for(const p of sorter){
+
+        if(duty.length === 0){
+            duty.push({
+                start: new Date(p.start),
+                slut: new Date(p.slut)
+            });
+            continue;
+        }
+
+        const prev = duty[duty.length - 1];
+
+        const gap =
+            p.start.getTime() - prev.slut.getTime();
+
+        // 🔥 FDP-regel: vila < 2h = arbete
+        if(gap < MIN_VILA){
+
+            prev.slut = new Date(
+                Math.max(prev.slut.getTime(), p.slut.getTime())
+            );
+
+        } else {
+
+            duty.push({
+                start: new Date(p.start),
+                slut: new Date(p.slut)
+            });
+        }
+    }
+
+    // 🔥 Viktigt: räknar NU som pågående duty om <2h vila
+    if(duty.length){
+
+        const last = duty[duty.length - 1];
+
+        const gapToNow =
+            now.getTime() - last.slut.getTime();
+
+        if(gapToNow < MIN_VILA){
+            last.slut = new Date(now);
+        }
+    }
+
+    return duty;
+}
 function beräknaFDP(now, pass){
 
     const H = 3600 * 1000;
 
     const MIN_VILA = 2 * H;
     const RESET = 8 * H;
-    
+    now = new Date(Math.floor(now.getTime() / 60000) * 60000);
 
    //////////////////////////////////////////////////////
 // 1. SORTERA PASS
@@ -515,12 +580,17 @@ function beräknaFDP(now, pass){
 
 const sorter = [...pass]
     .filter(p => p.slut > p.start)
+    .map(p => ({
+        ...p,
+        start: avrundaTillMinut(new Date(p.start)),
+        slut: avrundaTillMinut(new Date(p.slut))
+    }))
     .sort((a,b)=>a.start-b.start);
     //////////////////////////////////////////////////////
     // 2. BYGG DUTY (vila <2h = arbete)
     //////////////////////////////////////////////////////
 
-    const duty = [];
+    const duty = byggDuty(sorter, now);
 
     for(let i=0;i<sorter.length;i++){
 
@@ -675,7 +745,7 @@ for(const huvudblock of giltigaVilor){
 
     for(
         let kandidatTid = huvudStart;
-        kandidatTid <= huvudSlut;
+        kandidatTid < huvudSlut;
         kandidatTid += 60 * 1000
     ){
 
@@ -754,7 +824,7 @@ for(const huvudblock of giltigaVilor){
             arbetstidMs += (e - s);
         }
     }
-
+fdpStart = new Date(Math.floor(fdpStart.getTime() / 60000) * 60000);
     //////////////////////////////////////////////////////
     // 6. RETURN (VIKTIGT)
     //////////////////////////////////////////////////////
@@ -774,137 +844,75 @@ for(const huvudblock of giltigaVilor){
     const windowStart =
         endTime.getTime() - WINDOW;
 
-    //////////////////////////////////////////////////////
-    // KLIPP PASS TILL 24h WINDOW
-    //////////////////////////////////////////////////////
+    // 1. bygg korrekt duty
+    const duty = byggDuty(pass, endTime);
 
-    const klippta = [];
-
-    for(const p of pass){
-
-        const s =
-            Math.max(
-                p.start.getTime(),
-                windowStart
-            );
-
-        const e =
-            Math.min(
-                p.slut.getTime(),
-                endTime.getTime()
-            );
-
-        if(e > s){
-
-            klippta.push({
-
-                start:new Date(s),
-                slut:new Date(e)
-            });
-        }
-    }
-
-    //////////////////////////////////////////////////////
-    // SORTERA
-    //////////////////////////////////////////////////////
-
-    klippta.sort((a,b)=>a.start-b.start);
-
-    //////////////////////////////////////////////////////
-    // BYGG VILOR
-    //////////////////////////////////////////////////////
-
+    // 2. räkna vila mellan duty-block
     let totalVila = 0;
     let har4h = false;
 
     let cursor = windowStart;
 
-    for(const p of klippta){
+    for(const d of duty){
 
         const vila =
-            p.start.getTime() - cursor;
+            d.start.getTime() - cursor;
 
         if(vila > 0){
-
             totalVila += vila;
 
-            if(vila >= 4*3600*1000){
+            if(vila >= 4 * 3600 * 1000){
                 har4h = true;
             }
         }
 
-        cursor =
-            Math.max(
-                cursor,
-                p.slut.getTime()
-            );
+        cursor = Math.max(cursor, d.slut.getTime());
     }
 
-    //////////////////////////////////////////////////////
-    // SISTA VILAN
-    //////////////////////////////////////////////////////
-
+    // sista vila fram till endTime
     const sistaVila =
         endTime.getTime() - cursor;
 
     if(sistaVila > 0){
-
         totalVila += sistaVila;
 
-        if(sistaVila >= 4*3600*1000){
+        if(sistaVila >= 4 * 3600 * 1000){
             har4h = true;
         }
     }
 
-    //////////////////////////////////////////////////////
-    // RESULTAT
-    //////////////////////////////////////////////////////
-
     return {
-
         ok:
-            totalVila >= 8*3600*1000
-            &&
+            totalVila >= 8 * 3600 * 1000 &&
             har4h,
-
         totalVila,
         har4h
     };
 }
 function hittaVilobrottTid(now, pass){
 
-    const STEP = 5 * 60 * 1000;
+    const STEP =  60 * 1000;
 
     for(
         let t = now.getTime();
-        t < now.getTime() + 48*3600*1000;
+        t < now.getTime() + 48 * 3600 * 1000;
         t += STEP
     ){
 
-        //////////////////////////////////////////////////
-        // SIMULERA KONTINUERLIGT ARBETE
-        //////////////////////////////////////////////////
-
         const simPass = [
-
             ...pass,
-
             {
-                start:new Date(now),
-                slut:new Date(t)
+                start: avrundaTillMinut(new Date(now)),
+slut: avrundaTillMinut(new Date(t))
             }
         ];
 
         const check =
-            uppfyllerViloregler(
-                simPass,
-                new Date(t)
-            );
+            uppfyllerViloregler(simPass, new Date(t));
 
         if(!check.ok){
-
-            return new Date(t);
-        }
+    return new Date(t - STEP);
+}
     }
 
     return null;
@@ -952,8 +960,10 @@ function rita(){
         canvas.height
     );
 
-    const now = new Date();
-
+    const now = new Date(
+    Math.floor(Date.now() / 60000) * 60000
+);
+const roundedNow = now;
     //////////////////////////////////////////////////////////
     // FDP
     //////////////////////////////////////////////////////////
