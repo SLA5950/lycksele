@@ -6,54 +6,84 @@
 <title>FDP</title>
 
 <style>
-    body{
-        background:#111;
-        color:#eee;
-        font-family:sans-serif;
-        text-align:center;
-        margin:10px;
-        padding:10px;
+    body {
+        background: #111;
+        color: #eee;
+        font-family: sans-serif;
+        text-align: center;
+        margin: 10px;
+        padding: 10px;
     }
 
-    canvas{
-        width:100%;
-        max-width:1000px;
-        height:auto;
-        border:1px solid #444;
-        background:#222;
-        margin:10px auto;
-        display:block;
-        cursor:pointer;
+    canvas {
+        width: 100%;
+        max-width: 1000px;
+        height: auto;
+        border: 1px solid #444;
+        background: #222;
+        margin: 10px auto;
+        display: block;
+        cursor: pointer;
     }
 
-    input,button{
-        font-size:1em;
-        margin:5px;
-        padding:6px 8px;
-        max-width:90vw;
+    input, button {
+        font-size: 1em;
+        margin: 5px;
+        padding: 6px 8px;
+        max-width: 90vw;
     }
 
-    #status{
-        margin-top:10px;
-        font-weight:bold;
+    #status {
+        margin-top: 10px;
+        font-weight: bold;
     }
 
-    #fdpResult{
-        margin-top:8px;
-        font-weight:bold;
-        color:orange;
+    #fdpResult {
+        margin-top: 8px;
+        font-weight: bold;
+        color: orange;
     }
 
-    button.knapp-grön{
-        background:#0a0 !important;
-        color:#fff !important;
-        border:none;
+    button.knapp-grön {
+        background: #0a0 !important;
+        color: #fff !important;
+        border: none;
     }
 
-    button.knapp-röd{
-        background:#a00 !important;
-        color:#fff !important;
-        border:none;
+    button.knapp-röd {
+        background: #a00 !important;
+        color: #fff !important;
+        border: none;
+    }
+
+    .control-group {
+        white-space: nowrap;
+        display: inline-block;
+        margin-right: 1em;
+    }
+
+    #legend {
+        margin: 15px auto 0;
+        text-align: left;
+        max-width: 1000px;
+        font-size: 14px;
+    }
+
+    .legend-row {
+        display: flex;
+        align-items: center;
+        margin: 6px 0;
+    }
+
+    .legend-swatch {
+        margin-right: 10px;
+        flex-shrink: 0;
+    }
+
+    .legend-copyright {
+        margin-top: 16px;
+        color: #666;
+        font-size: 13px;
     }
 </style>
 </head>
@@ -61,16 +91,12 @@
 <body>
 
 <div>
-    <div style="white-space: nowrap; display: inline-block; margin-right: 1em;">
-        Starttid:
-        <input type="datetime-local" id="start" />
+    <div class="control-group">
+        Starttid: <input type="datetime-local" id="start" />
     </div>
-
-    <div style="white-space: nowrap; display: inline-block; margin-right: 1em;">
-        Sluttid:
-        <input type="datetime-local" id="slut" />
+    <div class="control-group">
+        Sluttid: <input type="datetime-local" id="slut" />
     </div>
-
     <button onclick="läggTillEllerUppdateraPass()">Add/Uppdatera</button>
     <button id="btnTaBort" onclick="taBortPass()" disabled>Delete pass</button>
     <button id="btnStartStop" onclick="startaEllerStoppaPass()">Starta pass</button>
@@ -83,88 +109,39 @@
 <div id="status"></div>
 <div id="fdpResult"></div>
 
-<div id="legend"
-     style="
-        margin-top:15px;
-        text-align:left;
-        max-width:1000px;
-        margin-left:auto;
-        margin-right:auto;
-        font-size:14px;
-     ">
+<div id="legend">
 
-    <div style="display:flex;align-items:center;margin:6px 0;">
-        <div style="
-            width:40px;
-            height:12px;
-            background:#0f0;
-            margin-right:10px;
-        "></div>
-
+    <div class="legend-row">
+        <div class="legend-swatch" style="width:40px;height:12px;background:#0f0;"></div>
         <span>Arbetspass</span>
     </div>
 
-    <div style="display:flex;align-items:center;margin:6px 0;">
-        <div style="
-            width:40px;
-            height:4px;
-            background:#0f0;
-            margin-right:10px;
-        "></div>
-
+    <div class="legend-row">
+        <div class="legend-swatch" style="width:40px;height:4px;background:#0f0;"></div>
         <span>Vila &lt; 2h (räknas som arbete)</span>
     </div>
 
-    <div style="display:flex;align-items:center;margin:6px 0;">
-        <div style="
-            width:40px;
-            height:6px;
-            background:#88f;
-            margin-right:10px;
-        "></div>
-
+    <div class="legend-row">
+        <div class="legend-swatch" style="width:40px;height:6px;background:#88f;"></div>
         <span>Vila 2h - 4h</span>
     </div>
 
-    <div style="display:flex;align-items:center;margin:6px 0;">
-        <div style="
-            width:40px;
-            height:10px;
-            background:#00f;
-            margin-right:10px;
-        "></div>
-
+    <div class="legend-row">
+        <div class="legend-swatch" style="width:40px;height:10px;background:#00f;"></div>
         <span>Vila 4h - 8h</span>
     </div>
 
-    <div style="display:flex;align-items:center;margin:6px 0;">
-        <div style="
-            width:40px;
-            height:10px;
-            background:yellow;
-            margin-right:10px;
-        "></div>
-
+    <div class="legend-row">
+        <div class="legend-swatch" style="width:40px;height:10px;background:yellow;"></div>
         <span>Vila ≥ 8h (FDP reset)</span>
     </div>
 
-   
-    <div style="display:flex;align-items:center;margin:6px 0;">
-        <div style="
-            width:3px;
-            height:18px;
-            background:magenta;
-            margin-right:10px;
-        "></div>
-
+    <div class="legend-row">
+        <div class="legend-swatch" style="width:3px;height:18px;background:magenta;"></div>
         <span>FDP start</span>
     </div>
 
-    <div style="
-        margin-top:16px;
-        color:#666;
-        font-size:13px;
-    ">
+    <div class="legend-copyright">
         Copyright Ove Lundström © FDPcalc 8.0
     </div>
 
@@ -173,85 +150,61 @@
 <script>
 
 //////////////////////////////////////////////////////////////
-// GLOBALT
+// GLOBALS
 //////////////////////////////////////////////////////////////
+
 const DEFAULT_PASS_ID = "DEFAULT_PASS";
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-let arbetspass = [];
-let passPositions = [];
-
+let arbetspass     = [];
+let passPositions  = [];
 let markeratPassId = null;
 let redigerarIndex = -1;
+let pågåendePass   = null;
+let vilaPositions = [];
+let markeradVilaIndex = null;
 
-let pågåendePass = null;
-
-const btnStartStop = document.getElementById("btnStartStop");
+const btnStartStop    = document.getElementById("btnStartStop");
 const btnStartStopSet = document.getElementById("btnStartStopSet");
 
 //////////////////////////////////////////////////////////////
-// UTIL
+// UTILITIES
 //////////////////////////////////////////////////////////////
-function avrundaTillMinut(date){
-    return new Date(
-        Math.floor(date.getTime() / 60000) * 60000
-    );
-}
-function säkerställDefaultPass() {
 
-    const finns = arbetspass.some(p => p.id === DEFAULT_PASS_ID);
-
-    if (!finns) {
-
-        arbetspass.push({
-            id: DEFAULT_PASS_ID,
-            start: new Date(2026, 0, 1, 4, 0),
-            slut: new Date(2026, 0, 1, 5, 0)
-        });
-
-        sparaPass();
-    }
-}
-function genereraId(){
-    return "_" + Math.random().toString(36).substr(2,9);
+function avrundaTillMinut(date) {
+    return new Date(Math.floor(date.getTime() / 60000) * 60000);
 }
 
-function localDatetimeString(date){
-    const pad = n => n.toString().padStart(2,"0");
+function genereraId() {
+    return "_" + Math.random().toString(36).substr(2, 9);
+}
 
+function localDatetimeString(date) {
+    const pad = n => n.toString().padStart(2, "0");
     return date.getFullYear() + "-" +
-        pad(date.getMonth()+1) + "-" +
+        pad(date.getMonth() + 1) + "-" +
         pad(date.getDate()) + "T" +
         pad(date.getHours()) + ":" +
         pad(date.getMinutes());
 }
 
-function parseLocalDatetime(s){
-    if(!s) return null;
-
-    const [datePart,timePart] = s.split("T");
-
-    const [year,month,day] =
-        datePart.split("-").map(Number);
-
-    const [hour,minute] =
-        timePart.split(":").map(Number);
-
-    return new Date(year,month-1,day,hour,minute);
+function parseLocalDatetime(s) {
+    if (!s) return null;
+    const [datePart, timePart] = s.split("T");
+    const [year, month, day]   = datePart.split("-").map(Number);
+    const [hour, minute]       = timePart.split(":").map(Number);
+    return new Date(year, month - 1, day, hour, minute);
 }
 
-function msTillText(ms){
-
+function msTillText(ms) {
     const totalMin = Math.floor(ms / 60000);
-
     const h = Math.floor(totalMin / 60);
     const m = totalMin % 60;
-
-    return `${h}h ${m.toString().padStart(2,"0")}m`;
+    return `${h}h ${m.toString().padStart(2, "0")}m`;
 }
 
-function skrivFDPResultat(text){
+function skrivFDPResultat(text) {
     document.getElementById("fdpResult").textContent = text;
 }
 
@@ -259,1412 +212,650 @@ function skrivFDPResultat(text){
 // LOCAL STORAGE
 //////////////////////////////////////////////////////////////
 
-document.getElementById("resetStorageBtn")
-.addEventListener("click",()=>{
-
+document.getElementById("resetStorageBtn").addEventListener("click", () => {
     localStorage.clear();
-
     alert("Minne nollställt");
-
     location.reload();
 });
 
-function laddaFrånMinne(){
-
+function laddaFrånMinne() {
     const sparade = localStorage.getItem("arbetspass");
-
-    if(sparade){
-
-        arbetspass = JSON.parse(sparade).map(p=>({
-
-            id:p.id || genereraId(),
-            start:avrundaTillMinut(new Date(p.start)),
-slut:avrundaTillMinut(new Date(p.slut))
-
+    if (sparade) {
+        arbetspass = JSON.parse(sparade).map(p => ({
+            id:    p.id || genereraId(),
+            start: avrundaTillMinut(new Date(p.start)),
+            slut:  avrundaTillMinut(new Date(p.slut))
         }));
     }
 
     const pågående = localStorage.getItem("pågåendePass");
-
-    if(pågående){
-
+    if (pågående) {
         const p = JSON.parse(pågående);
-
-        pågåendePass = {
-
-            id:p.id,
-            start:new Date(p.start)
-        };
+        pågåendePass = { id: p.id, start: new Date(p.start) };
     }
 }
 
-function sparaPass(){
-
-    localStorage.setItem(
-        "arbetspass",
-        JSON.stringify(arbetspass)
-    );
+function sparaPass() {
+    localStorage.setItem("arbetspass", JSON.stringify(arbetspass));
 }
 
-//////////////////////////////////////////////////////////////
-// KNAPPAR
-//////////////////////////////////////////////////////////////
-
-function uppdateraKnappar(){
-
-    if(pågåendePass){
-
-        btnStartStop.textContent = "Stoppa pass";
-        btnStartStop.className = "knapp-grön";
-
-        btnStartStopSet.textContent = "S+30";
-        btnStartStopSet.className = "knapp-grön";
-
-    }else{
-
-        btnStartStop.textContent = "Starta pass";
-        btnStartStop.className = "knapp-röd";
-
-        btnStartStopSet.textContent = "Start SET";
-        btnStartStopSet.className = "knapp-röd";
-    }
-}
-
-//////////////////////////////////////////////////////////////
-// PASS HANTERING
-//////////////////////////////////////////////////////////////
-
-function läggTillEllerUppdateraPass(){
-
-    const s = parseLocalDatetime(
-        document.getElementById("start").value
-    );
-
-    const e = parseLocalDatetime(
-        document.getElementById("slut").value
-    );
-
-    if(!s || !e){
-
-        alert("Fyll i tider");
-        return;
-    }
-
-    if(e <= s){
-
-        alert("Slut måste vara efter start");
-        return;
-    }
-
-    if(redigerarIndex >= 0){
-
-        arbetspass[redigerarIndex].start = s;
-        arbetspass[redigerarIndex].slut = e;
-
-    }else{
-
+function säkerställDefaultPass() {
+    const finns = arbetspass.some(p => p.id === DEFAULT_PASS_ID);
+    if (!finns) {
         arbetspass.push({
-
-            id:genereraId(),
-            start:s,
-            slut:e
+            id:    DEFAULT_PASS_ID,
+            start: new Date(2026, 0, 1, 4, 0),
+            slut:  new Date(2026, 0, 1, 5, 0)
         });
+        sparaPass();
+    }
+}
+
+//////////////////////////////////////////////////////////////
+// BUTTON STATE
+//////////////////////////////////////////////////////////////
+
+function uppdateraKnappar() {
+    if (pågåendePass) {
+        btnStartStop.textContent    = "Stoppa pass";
+        btnStartStop.className      = "knapp-grön";
+        btnStartStopSet.textContent = "S+30";
+        btnStartStopSet.className   = "knapp-grön";
+    } else {
+        btnStartStop.textContent    = "Starta pass";
+        btnStartStop.className      = "knapp-röd";
+        btnStartStopSet.textContent = "Start SET";
+        btnStartStopSet.className   = "knapp-röd";
+    }
+}
+
+//////////////////////////////////////////////////////////////
+// SHIFT MANAGEMENT
+//////////////////////////////////////////////////////////////
+
+function läggTillEllerUppdateraPass() {
+    const s = parseLocalDatetime(document.getElementById("start").value);
+    const e = parseLocalDatetime(document.getElementById("slut").value);
+
+    if (!s || !e) { alert("Fyll i tider"); return; }
+    if (e <= s)   { alert("Slut måste vara efter start"); return; }
+
+    if (redigerarIndex >= 0) {
+        arbetspass[redigerarIndex].start = s;
+        arbetspass[redigerarIndex].slut  = e;
+    } else {
+        arbetspass.push({ id: genereraId(), start: s, slut: e });
     }
 
     sparaPass();
-
     rensaInmatning();
-
     uppdatera();
 }
 
-function rensaInmatning(){
-
+function rensaInmatning() {
     document.getElementById("start").value = "";
-    document.getElementById("slut").value = "";
-
+    document.getElementById("slut").value  = "";
     redigerarIndex = -1;
     markeratPassId = null;
-
     document.getElementById("btnTaBort").disabled = true;
 }
 
-function taBortPass(){
-
-    if(!markeratPassId) return;
-
-    // blockera default
+function taBortPass() {
+    if (!markeratPassId) return;
     if (markeratPassId === DEFAULT_PASS_ID) {
         alert("Detta pass kan inte tas bort");
         return;
     }
-
-    arbetspass =
-        arbetspass.filter(p => p.id !== markeratPassId);
-
+    arbetspass = arbetspass.filter(p => p.id !== markeratPassId);
     sparaPass();
-
     rensaInmatning();
-
     uppdatera();
 }
 
 //////////////////////////////////////////////////////////////
-// START STOP
+// START / STOP
 //////////////////////////////////////////////////////////////
 
-function startaEllerStoppaPass(){
-
+function startaEllerStoppaPass() {
     const nu = avrundaTillMinut(new Date());
 
-    if(!pågåendePass){
-
-        pågåendePass = {
-
-            id:genereraId(),
-            start:avrundaTillMinut(nu)
-        };
-
-        localStorage.setItem(
-            "pågåendePass",
-            JSON.stringify(pågåendePass)
-        );
-
-    }else{
-
-        pågåendePass.slut = avrundaTillMinut(nu);
-
+    if (!pågåendePass) {
+        pågåendePass = { id: genereraId(), start: nu };
+        localStorage.setItem("pågåendePass", JSON.stringify(pågåendePass));
+    } else {
+        pågåendePass.slut = nu;
         arbetspass.push(pågåendePass);
-
         sparaPass();
-
         localStorage.removeItem("pågåendePass");
-
         pågåendePass = null;
     }
 
     uppdateraKnappar();
-
     uppdatera();
 }
 
-function startaEllerStoppaMedSet(){
-
-    if(!pågåendePass){
-
-        const starttid =
-            parseLocalDatetime(
-                document.getElementById("start").value
-            );
-
-        if(!starttid){
-
-            alert("Ogiltig starttid");
-            return;
-        }
-
-        pågåendePass = {
-
-            id:genereraId(),
-            start:starttid
-        };
-
-        localStorage.setItem(
-            "pågåendePass",
-            JSON.stringify(pågåendePass)
-        );
-
-    }else{
-
-        pågåendePass.slut =
-            new Date(Date.now() + 30*60000);
-
+function startaEllerStoppaMedSet() {
+    if (!pågåendePass) {
+        const starttid = parseLocalDatetime(document.getElementById("start").value);
+        if (!starttid) { alert("Ogiltig starttid"); return; }
+        pågåendePass = { id: genereraId(), start: starttid };
+        localStorage.setItem("pågåendePass", JSON.stringify(pågåendePass));
+    } else {
+        pågåendePass.slut = new Date(Date.now() + 30 * 60000);
         arbetspass.push(pågåendePass);
-
         sparaPass();
-
         localStorage.removeItem("pågåendePass");
-
         pågåendePass = null;
     }
 
     uppdateraKnappar();
-
     uppdatera();
 }
 
-function harMinstEn4hVila(vilor){
-
-    const FYRAH = 4 * 3600 * 1000;
-
-    return vilor.some(v => {
-        const vilaTid = v.slut - v.start;
-        return vilaTid >= FYRAH;
-    });
-}
 //////////////////////////////////////////////////////////////
-// DEN ENDA FDP BERÄKNINGEN
+// FDP CALCULATION
 //////////////////////////////////////////////////////////////
-function byggDuty(pass, now){
 
+function byggDuty(pass, now) {
     const MIN_VILA = 2 * 3600 * 1000;
 
- const sorter = [...pass]
-    .filter(p => p.slut > p.start)
-    .map(p => ({
-        ...p,
-        start: avrundaTillMinut(new Date(p.start)),
-        slut: avrundaTillMinut(new Date(p.slut))
-    }))
-    .sort((a,b)=>a.start-b.start);
+    const sorter = [...pass]
+        .filter(p => p.slut > p.start)
+        .map(p => ({
+            ...p,
+            start: avrundaTillMinut(new Date(p.start)),
+            slut:  avrundaTillMinut(new Date(p.slut))
+        }))
+        .sort((a, b) => a.start - b.start);
 
     const duty = [];
 
-    for(const p of sorter){
-
-        if(duty.length === 0){
-            duty.push({
-                start: new Date(p.start),
-                slut: new Date(p.slut)
-            });
+    for (const p of sorter) {
+        if (duty.length === 0) {
+            duty.push({ start: new Date(p.start), slut: new Date(p.slut) });
             continue;
         }
 
         const prev = duty[duty.length - 1];
+        const gap  = p.start.getTime() - prev.slut.getTime();
 
-        const gap =
-            p.start.getTime() - prev.slut.getTime();
-
-        // 🔥 FDP-regel: vila < 2h = arbete
-        if(gap < MIN_VILA){
-
-            prev.slut = new Date(
-                Math.max(prev.slut.getTime(), p.slut.getTime())
-            );
-
+        // FDP rule: rest < 2h counts as work
+        if (gap < MIN_VILA) {
+            prev.slut = new Date(Math.max(prev.slut.getTime(), p.slut.getTime()));
         } else {
-
-            duty.push({
-                start: new Date(p.start),
-                slut: new Date(p.slut)
-            });
+            duty.push({ start: new Date(p.start), slut: new Date(p.slut) });
         }
     }
 
-    // 🔥 Viktigt: räknar NU som pågående duty om <2h vila
-    if(duty.length){
-
-        const last = duty[duty.length - 1];
-
-        const gapToNow =
-            now.getTime() - last.slut.getTime();
-
-        if(gapToNow < MIN_VILA){
-            last.slut = new Date(now);
-        }
+    // Extend last duty block to now if gap to now is < 2h
+    if (duty.length) {
+        const last     = duty[duty.length - 1];
+        const gapToNow = now.getTime() - last.slut.getTime();
+        if (gapToNow < MIN_VILA) last.slut = new Date(now);
     }
 
     return duty;
 }
-function beräknaFDP(now, pass){
 
-    const H = 3600 * 1000;
-
+function beräknaFDP(now, pass) {
+    const H        = 3600 * 1000;
     const MIN_VILA = 2 * H;
-    const RESET = 8 * H;
-    now = new Date(Math.floor(now.getTime() / 60000) * 60000);
+    const RESET    = 8 * H;
 
-   //////////////////////////////////////////////////////
-// 1. SORTERA PASS
-//////////////////////////////////////////////////////
+    now = avrundaTillMinut(now);
 
-const sorter = [...pass]
-    .filter(p => p.slut > p.start)
-    .map(p => ({
-        ...p,
-        start: avrundaTillMinut(new Date(p.start)),
-        slut: avrundaTillMinut(new Date(p.slut))
-    }))
-    .sort((a,b)=>a.start-b.start);
-    //////////////////////////////////////////////////////
-    // 2. BYGG DUTY (vila <2h = arbete)
-    //////////////////////////////////////////////////////
+    // 1. Sort shifts
+    const sorter = [...pass]
+        .filter(p => p.slut > p.start)
+        .map(p => ({
+            ...p,
+            start: avrundaTillMinut(new Date(p.start)),
+            slut:  avrundaTillMinut(new Date(p.slut))
+        }))
+        .sort((a, b) => a.start - b.start);
 
+    // 2. Build duty periods (rest < 2h = work)
     const duty = byggDuty(sorter, now);
 
-    for(let i=0;i<sorter.length;i++){
-
-        const p = sorter[i];
-
-        if(duty.length === 0){
-            duty.push({
-                start: new Date(p.start),
-                slut: new Date(p.slut)
-            });
-            continue;
-        }
-
-        const prev = duty[duty.length - 1];
-
-        const gap =
-            p.start.getTime() - prev.slut.getTime();
-
-        if(gap < MIN_VILA){
-            prev.slut = new Date(
-                Math.max(prev.slut.getTime(), p.slut.getTime())
-            );
-        }else{
-            duty.push({
-                start: new Date(p.start),
-                slut: new Date(p.slut)
-            });
-        }
-    }
-//////////////////////////////////////////////////////
-// 2.5 NU-gap <2h = arbete
-//////////////////////////////////////////////////////
-
-if(duty.length){
-
-    const last = duty[duty.length - 1];
-
-    const gapToNow =
-        now.getTime() - last.slut.getTime();
-
-    if(gapToNow < MIN_VILA){
-
-        // förläng duty till NU
-        last.slut = new Date(now);
-    }
-}
-    //////////////////////////////////////////////////////
-    // 3. BYGG VILOR
-    //////////////////////////////////////////////////////
-
+    // 3. Build rest periods
     const vilor = [];
 
-    for(let i=0;i<sorter.length-1;i++){
-
-        vilor.push({
-            start: new Date(sorter[i].slut),
-            slut: new Date(sorter[i+1].start)
-        });
+    for (let i = 0; i < sorter.length - 1; i++) {
+        vilor.push({ start: new Date(sorter[i].slut), slut: new Date(sorter[i + 1].start) });
     }
 
-    if(sorter.length){
-
-    const sistaPass =
-        sorter[sorter.length - 1];
-
-    if(now.getTime() > sistaPass.slut.getTime()){
-
-        vilor.push({
-
-            start: new Date(sistaPass.slut),
-            slut: new Date(now)
-        });
+    if (sorter.length) {
+        const sistaPass = sorter[sorter.length - 1];
+        if (now.getTime() > sistaPass.slut.getTime()) {
+            vilor.push({ start: new Date(sistaPass.slut), slut: new Date(now) });
+        }
     }
-}
 
-  //////////////////////////////////////////////////////
-// 4. BERÄKNA FDP START
-//////////////////////////////////////////////////////
+    // 4. Calculate FDP start
+    let fdpStart             = new Date(now);
+    let frånSammanhängande8h = sorter.length === 0;
 
-let fdpStart = new Date(now);
-let frånSammanhängande8h = false;
+    // A. Latest consecutive rest >= 8h resets FDP
+    for (let i = vilor.length - 1; i >= 0; i--) {
+        const v      = vilor[i];
+        const vilaMs = v.slut.getTime() - v.start.getTime();
 
-//////////////////////////////////////////////////////
-// INGA PASS = SAMMANHÄNGANDE VILA
-//////////////////////////////////////////////////////
+        if (vilaMs >= RESET) {
+            // FDP start = first duty after the rest
+            for (const d of duty) {
+                if (d.start.getTime() >= v.slut.getTime()) {
+                    fdpStart             = new Date(d.start);
+                    frånSammanhängande8h = true;
+                    break;
+                }
+            }
+            break;
+        }
+    }
 
-if(sorter.length === 0){
+    // B. Split duty: search for a later valid FDP start
+    const giltigaVilor = vilor.filter(v => (v.slut - v.start) >= MIN_VILA);
 
-    frånSammanhängande8h = true;
-}
+    for (const huvudblock of giltigaVilor) {
+        const huvudStart = huvudblock.start.getTime();
+        const huvudSlut  = huvudblock.slut.getTime();
 
-//////////////////////////////////////////////////////
-// A.
-// SENASTE SAMMANHÄNGANDE VILA >=8h
-//////////////////////////////////////////////////////
+        for (let kandidatTid = huvudStart; kandidatTid < huvudSlut; kandidatTid += 60000) {
+            let totalVila  = 0;
+            let har4hBlock = false;
 
-for(let i = vilor.length - 1; i >= 0; i--){
+            for (const v of giltigaVilor) {
+                const s = Math.max(v.start.getTime(), kandidatTid);
+                const e = Math.min(v.slut.getTime(), now.getTime());
+                if (e <= s) continue;
 
-    const v = vilor[i];
+                totalVila += (e - s);
 
-    const vilaMs =
-        v.slut.getTime() -
-        v.start.getTime();
+                const blockStart = v.start.getTime();
+                const blockEnd   = Math.min(v.slut.getTime(), now.getTime());
 
-    if(vilaMs >= RESET){
+                // Case 1: entire block falls after candidate
+                if (blockStart >= kandidatTid && (blockEnd - blockStart) >= 4 * H) {
+                    har4hBlock = true;
+                }
+                // Case 2: candidate falls inside block — remaining portion must be >= 4h
+                else if (blockStart < kandidatTid && blockEnd > kandidatTid && (blockEnd - kandidatTid) >= 4 * H) {
+                    har4hBlock = true;
+                }
+            }
 
-        //////////////////////////////////////////////////
-        // FDP start = första duty efter vilan
-        //////////////////////////////////////////////////
-
-        for(const d of duty){
-
-            if(d.start.getTime() >= v.slut.getTime()){
-
-                fdpStart =
-    new Date(d.start);
-
-frånSammanhängande8h = true;
-
-                break;
+            if (totalVila >= RESET && har4hBlock && kandidatTid > fdpStart.getTime()) {
+                fdpStart             = new Date(kandidatTid);
+                frånSammanhängande8h = false;
             }
         }
-
-        break;
     }
-}
 
-//////////////////////////////////////////////////////
-// B.
-// SPLIT DUTY
-//////////////////////////////////////////////////////
-
-const giltigaVilor = vilor.filter(v =>
-    (v.slut - v.start) >= MIN_VILA
-);
-
-//////////////////////////////////////////////////////
-// TESTA ALLA MÖJLIGA FDPSTART
-//////////////////////////////////////////////////////
-
-for(const huvudblock of giltigaVilor){
-
-    const huvudStart =
-        huvudblock.start.getTime();
-
-    const huvudSlut =
-        huvudblock.slut.getTime();
-
-    //////////////////////////////////////////////////
-    // gå minutvis genom blocket
-    //////////////////////////////////////////////////
-
-    for(
-        let kandidatTid = huvudStart;
-        kandidatTid < huvudSlut;
-        kandidatTid += 60 * 1000
-    ){
-
-        let totalVila = 0;
-        let har4hBlock = false;
-
-        //////////////////////////////////////////////////
-        // summera vila kandidat -> NU
-        //////////////////////////////////////////////////
-
-        for(const v of giltigaVilor){
-
-            const s = Math.max(
-                v.start.getTime(),
-                kandidatTid
-            );
-
-            const e = Math.min(
-                v.slut.getTime(),
-                now.getTime()
-            );
-
-            if(e <= s) continue;
-
-            const vilaMs = e - s;
-
-            totalVila += vilaMs;
-
-            //////////////////////////////////////////////////
-            // minst ett kvarvarande block >=4h
-            //////////////////////////////////////////////////
-
-           const blockStart = v.start.getTime();
-const blockEnd   = Math.min(v.slut.getTime(), now.getTime());
-
-// ✅ FALL 1: hela blocket ligger efter kandidat
-if (
-    blockStart >= kandidatTid &&
-    (blockEnd - blockStart) >= 4 * H
-){
-    har4hBlock = true;
-}
-
-// ✅ FALL 2: kandidat ligger inne i blocket → kvarvarande del måste vara ≥4h
-else if (
-    blockStart < kandidatTid &&
-    blockEnd > kandidatTid &&
-    (blockEnd - kandidatTid) >= 4 * H
-){
-    har4hBlock = true;
-}
-        }
-
-        //////////////////////////////////////////////////
-        // giltig FDPstart
-        //////////////////////////////////////////////////
-
-        if(
-    totalVila >= RESET &&
-    har4hBlock
-){
-
-    if(
-        kandidatTid >
-        fdpStart.getTime()
-    ){
-
-        //////////////////////////////////////////////////
-        // split duty gav senare FDPstart
-        //////////////////////////////////////////////////
-
-        fdpStart =
-            new Date(kandidatTid);
-
-        frånSammanhängande8h = false;
-    }
-}
-    }
-}
-    //////////////////////////////////////////////////////
-    // 5. RÄKNA ARBETSTID INOM FDP WINDOW
-    //////////////////////////////////////////////////////
-
+    // 5. Count working time within FDP window
     let arbetstidMs = 0;
-
-    for(const d of duty){
-
+    for (const d of duty) {
         const s = Math.max(d.start.getTime(), fdpStart.getTime());
         const e = Math.min(d.slut.getTime(), now.getTime());
-
-        if(e > s){
-            arbetstidMs += (e - s);
-        }
+        if (e > s) arbetstidMs += (e - s);
     }
-fdpStart = new Date(Math.floor(fdpStart.getTime() / 60000) * 60000);
-    //////////////////////////////////////////////////////
-    // 6. RETURN (VIKTIGT)
-    //////////////////////////////////////////////////////
 
-    return {
-    duty,
-    vilor,
-    fdpStart,
-    arbetstidMs,
-    frånSammanhängande8h
-};
+    fdpStart = avrundaTillMinut(fdpStart);
+
+    return { duty, vilor, fdpStart, arbetstidMs, frånSammanhängande8h };
 }
-   function uppfyllerViloregler(pass, endTime){
 
-    const WINDOW = 24 * 3600 * 1000;
+function uppfyllerViloregler(pass, endTime) {
+    const WINDOW      = 24 * 3600 * 1000;
+    const windowStart = endTime.getTime() - WINDOW;
 
-    const windowStart =
-        endTime.getTime() - WINDOW;
-
-    //////////////////////////////////////////////////////
-    // bygg duty korrekt
-    //////////////////////////////////////////////////////
-
-    const duty = byggDuty(pass, endTime);
-
-    //////////////////////////////////////////////////////
-    // bygg vilor inom exakt 24h-fönster
-    //////////////////////////////////////////////////////
-
+    const duty  = byggDuty(pass, endTime);
     const vilor = [];
+    let cursor  = windowStart;
 
-    let cursor = windowStart;
+    for (const d of duty) {
+        const dutyStart = Math.max(d.start.getTime(), windowStart);
+        const dutySlut  = Math.min(d.slut.getTime(), endTime.getTime());
 
-    for(const d of duty){
+        if (dutySlut <= dutyStart) continue;
 
-        //////////////////////////////////////////////////
-        // klipp duty mot 24h-fönstret
-        //////////////////////////////////////////////////
-
-        const dutyStart =
-            Math.max(
-                d.start.getTime(),
-                windowStart
-            );
-
-        const dutySlut =
-            Math.min(
-                d.slut.getTime(),
-                endTime.getTime()
-            );
-
-        //////////////////////////////////////////////////
-        // inget inom fönstret
-        //////////////////////////////////////////////////
-
-        if(dutySlut <= dutyStart){
-            continue;
-        }
-
-        //////////////////////////////////////////////////
-        // vila före duty
-        //////////////////////////////////////////////////
-
-        if(dutyStart > cursor){
-
-            vilor.push({
-
-                start: cursor,
-                slut: dutyStart
-            });
-        }
-
-        //////////////////////////////////////////////////
-        // flytta cursor framåt
-        //////////////////////////////////////////////////
-
-        cursor = Math.max(
-            cursor,
-            dutySlut
-        );
+        if (dutyStart > cursor) vilor.push({ start: cursor, slut: dutyStart });
+        cursor = Math.max(cursor, dutySlut);
     }
 
-    //////////////////////////////////////////////////////
-    // sista vila fram till endTime
-    //////////////////////////////////////////////////////
-
-    if(endTime.getTime() > cursor){
-
-        vilor.push({
-
-            start: cursor,
-            slut: endTime.getTime()
-        });
-    }
-
-    //////////////////////////////////////////////////////
-    // analysera vilor
-    //////////////////////////////////////////////////////
+    if (endTime.getTime() > cursor) vilor.push({ start: cursor, slut: endTime.getTime() });
 
     let totalVila = 0;
-    let har4h = false;
+    let har4h     = false;
 
-    for(const v of vilor){
-
-        const vilaMs =
-            v.slut - v.start;
-
-        totalVila += vilaMs;
-
-        //////////////////////////////////////////////////
-        // kräver FULLT 4h-block
-        //////////////////////////////////////////////////
-
-        if(vilaMs >= 4 * 3600 * 1000){
-
-            har4h = true;
-        }
+    for (const v of vilor) {
+        const vilaMs = v.slut - v.start;
+        totalVila   += vilaMs;
+        if (vilaMs >= 4 * 3600 * 1000) har4h = true;
     }
 
-    //////////////////////////////////////////////////////
-    // godkänd split duty?
-    //////////////////////////////////////////////////////
-
     return {
-
-        ok:
-            totalVila >= 8 * 3600 * 1000 &&
-            har4h,
-
+        ok: totalVila >= 8 * 3600 * 1000 && har4h,
         totalVila,
         har4h
     };
 }
-function hittaVilobrottTid(now, pass){
 
-    const STEP = 60 * 1000;
-
-    for(
-        let t = now.getTime();
-        t < now.getTime() + 48 * 3600 * 1000;
-        t += STEP
-    ){
-
+function hittaVilobrottTid(now, pass) {
+    for (let t = now.getTime(); t < now.getTime() + 48 * 3600 * 1000; t += 60000) {
         const simPass = [
-
             ...pass,
-
-            {
-                start: avrundaTillMinut(new Date(now)),
-                slut: avrundaTillMinut(new Date(t))
-            }
+            { start: avrundaTillMinut(new Date(now)), slut: avrundaTillMinut(new Date(t)) }
         ];
-
-        const check =
-            uppfyllerViloregler(
-                simPass,
-                new Date(t)
-            );
-
-        //////////////////////////////////////////////////
-        // RETURNERA EXAKT FÖRSTA BROTTMINUTEN
-        //////////////////////////////////////////////////
-
-        if(!check.ok){
-
-            return new Date(t);
-        }
+        if (!uppfyllerViloregler(simPass, new Date(t)).ok) return new Date(t);
     }
-
     return null;
 }
+
 //////////////////////////////////////////////////////////////
-// CANVAS
+// CANVAS RENDERING
 //////////////////////////////////////////////////////////////
 
-function storleksanpassaCanvas(){
-
-    canvas.width = canvas.clientWidth;
+function storleksanpassaCanvas() {
+    canvas.width  = canvas.clientWidth;
     canvas.height = 240;
 }
 
-function nollställTid(date){
-
-    return new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate()
-    );
+function nollställTid(date) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
-function formatDatum(date){
-
-    const m =
-        (date.getMonth()+1)
-        .toString()
-        .padStart(2,"0");
-
-    const d =
-        date.getDate()
-        .toString()
-        .padStart(2,"0");
-
-    return m + "-"+ d;
+function formatDatum(date) {
+    const m = (date.getMonth() + 1).toString().padStart(2, "0");
+    const d = date.getDate().toString().padStart(2, "0");
+    return m + "-" + d;
 }
 
-function rita(){
+function rita() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
+    const now = avrundaTillMinut(new Date());
 
-    const now = new Date(
-    Math.floor(Date.now() / 60000) * 60000
-);
-const roundedNow = now;
+    // Collect all shifts including any active one
+    const allaPass = [...arbetspass];
+    if (pågåendePass) {
+        allaPass.push({ id: pågåendePass.id, start: pågåendePass.start, slut: now });
+    }
+
     //////////////////////////////////////////////////////////
     // FDP
     //////////////////////////////////////////////////////////
 
-    let allaPass = [...arbetspass];
+    const fdpState        = beräknaFDP(now, allaPass);
+    const { vilor, duty } = fdpState;
+    const MAX_FDP         = 15 * 3600 * 1000;
+    const arbetstid       = fdpState.arbetstidMs;
+    const kvarMs          = MAX_FDP - arbetstid;
 
-if(pågåendePass){
+    const tid15h = kvarMs >= 0
+        ? new Date(now.getTime() + kvarMs)
+        : new Date(fdpState.fdpStart.getTime() + MAX_FDP);
 
-    allaPass.push({
+    const hh15    = tid15h.getHours().toString().padStart(2, "0");
+    const mm15    = tid15h.getMinutes().toString().padStart(2, "0");
+    const datum15 = (tid15h.getMonth() + 1).toString().padStart(2, "0") + "-" +
+                    tid15h.getDate().toString().padStart(2, "0");
 
-        id:pågåendePass.id,
-        start:pågåendePass.start,
-        slut:now
-    });
-}
+    document.getElementById("status").textContent = kvarMs >= 0
+        ? `FDP duty ${msTillText(arbetstid)}, 15h nås: ${datum15} ${hh15}:${mm15}`
+        : `FDP duty ${msTillText(arbetstid)} (15h uppnåddes: ${datum15} ${hh15}:${mm15})`;
 
-const fdpState =
-    beräknaFDP(now,allaPass);
-const vilor = fdpState.vilor;
-const duty = fdpState.duty;
-const MAX_FDP = 15 * 3600 * 1000;
-
-const arbetstid = fdpState.arbetstidMs;
-
-const kvarMs = MAX_FDP - arbetstid;
-
-let tid15h;
-
-//////////////////////////////////////////////////////
-// EJ NÅTT 15h
-//////////////////////////////////////////////////////
-
-if (kvarMs >= 0) {
-
-    tid15h =
-        new Date(now.getTime() + kvarMs);
-
-} else {
-
-    //////////////////////////////////////////////////
-    // REDAN ÖVER 15h
-    // visa exakt FDP-gräns:
-    // FDPStart + 15h
-    //////////////////////////////////////////////////
-
-    tid15h =
-        new Date(
-            fdpState.fdpStart.getTime() +
-            MAX_FDP
-        );
-}
-
-const hh15 =
-    tid15h.getHours().toString().padStart(2,"0");
-
-const mm15 =
-    tid15h.getMinutes().toString().padStart(2,"0");
-
-const datum15 =
-    (tid15h.getMonth()+1).toString().padStart(2,"0") +
-    "-" +
-    tid15h.getDate().toString().padStart(2,"0");
-
-let fdpText;
-
-if (kvarMs >= 0) {
-
-    fdpText =
-        "FDP duty " +
-        msTillText(arbetstid) +
-        ", 15h nås: " +
-        datum15 +
-        " " +
-        hh15 + ":" + mm15;
-
-} else {
-
-    fdpText =
-        "FDP duty " +
-        msTillText(arbetstid) +
-        " (15h uppnåddes: " +
-        datum15 +
-        " " +
-        hh15 + ":" + mm15 + ")";
-}
-
-document.getElementById("status").textContent = fdpText;
-//////////////////////////////////////////////////////////
-// FDP MAX TID
-//////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////
-// VILOBROTT = FDPSTART + 24h
-//////////////////////////////////////////////////////////
-
-const brottTid =
-    hittaVilobrottTid(now, allaPass);
-
-const hh =
-    brottTid.getHours()
-    .toString()
-    .padStart(2,"0");
-
-const mm =
-    brottTid.getMinutes()
-    .toString()
-    .padStart(2,"0");
-
-const datumBrott =
-    (brottTid.getMonth()+1).toString().padStart(2,"0") +
-    "-" +
-    brottTid.getDate().toString().padStart(2,"0");
-
-skrivFDPResultat(
-    "Ingen 8h vila (med 4h block) från: " +
-    datumBrott +
-    " " +
-    hh + ":" + mm
-);
     //////////////////////////////////////////////////////////
-    // TIDSLINJER
+    // REST BREACH TIME
     //////////////////////////////////////////////////////////
 
-    const d0 = nollställTid(now);
+    const brottTid   = hittaVilobrottTid(now, allaPass);
+    const hh         = brottTid.getHours().toString().padStart(2, "0");
+    const mm         = brottTid.getMinutes().toString().padStart(2, "0");
+    const datumBrott = (brottTid.getMonth() + 1).toString().padStart(2, "0") + "-" +
+                       brottTid.getDate().toString().padStart(2, "0");
 
-    const d24 =
-        new Date(
-            d0.getTime() -
-            24*3600*1000
-        );
+    skrivFDPResultat(`Ingen 8h vila (med 4h block) från: ${datumBrott} ${hh}:${mm}`);
 
-    const pxPerMs =
-        canvas.width /
-        (24*3600*1000);
+    //////////////////////////////////////////////////////////
+    // TIME RULERS
+    //////////////////////////////////////////////////////////
+
+    const d0      = nollställTid(now);
+    const d24     = new Date(d0.getTime() - 24 * 3600 * 1000);
+    const pxPerMs = canvas.width / (24 * 3600 * 1000);
 
     const linjaler = [
-
-        {
-            label:formatDatum(d24),
-            start:d24,
-            y:70,
-            height:40
-        },
-
-        {
-            label:formatDatum(d0),
-            start:d0,
-            y:170,
-            height:40
-        }
+        { label: formatDatum(d24), start: d24, y: 70,  height: 40 },
+        { label: formatDatum(d0),  start: d0,  y: 170, height: 40 }
     ];
-
-    //////////////////////////////////////////////////////////
-    // RITA LINJALER
-    //////////////////////////////////////////////////////////
 
     ctx.font = "16px monospace";
 
-    linjaler.forEach(l=>{
-
+    linjaler.forEach(l => {
         ctx.fillStyle = "#333";
-
-        ctx.fillRect(
-            0,
-            l.y - l.height/2,
-            canvas.width,
-            l.height
-        );
+        ctx.fillRect(0, l.y - l.height / 2, canvas.width, l.height);
 
         ctx.fillStyle = "#aaa";
+        ctx.fillText(l.label, 5, l.y - l.height / 2 - 25);
 
-        ctx.fillText(l.label, 5, l.y - l.height/2 - 25);
+        for (let m = 0; m <= 24; m++) {
+            const x = (m / 24) * canvas.width;
 
-        for(let m=0;m<=24;m++){
+            ctx.strokeStyle = "#555";
+            ctx.beginPath();
+            ctx.moveTo(x, l.y - l.height / 2);
+            ctx.lineTo(x, l.y + l.height / 2);
+            ctx.stroke();
 
-    //////////////////////////////////////////////////////
-    // VARJE TIMMA
-    //////////////////////////////////////////////////////
+            if (m % 2 === 0 && m < 24) {
+                const text      = m.toString().padStart(2, "0");
+                const textWidth = ctx.measureText(text).width;
+                ctx.fillStyle   = "#aaa";
+                ctx.fillText(text, x - textWidth / 2, l.y - l.height / 2 - 10);
+            }
+        }
+    });
 
-    const timmar = m ;
+    //////////////////////////////////////////////////////////
+    // SHIFTS
+    //////////////////////////////////////////////////////////
 
-    const x =
-        (timmar / 24) *
-        canvas.width;
+    passPositions = [];
 
-    //////////////////////////////////////////////////////
-    // VERTIKAL LINJE
-    //////////////////////////////////////////////////////
-
-    ctx.strokeStyle = "#555";
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        x,
-        l.y - l.height/2
-    );
-
-    ctx.lineTo(
-        x,
-        l.y + l.height/2
-    );
-
-    ctx.stroke();
-
-    //////////////////////////////////////////////////////
-    // TEXT VARANNAN TIMME
-    //////////////////////////////////////////////////////
-
-    if(m % 2 === 0 && timmar < 24){
-
-        const text =
-            Math.floor(timmar)
-            .toString()
-            .padStart(2,"0");
-
-        //////////////////////////////////////////////////
-        // CENTRERA TEXTEN ÖVER LINJEN
-        //////////////////////////////////////////////////
-
-        const textWidth =
-            ctx.measureText(text).width;
-
-        ctx.fillStyle = "#aaa";
-
-        ctx.fillText(
-
-    text,
-
-    x - textWidth/2,
-
-    l.y - l.height/2 - 10
-);
+    const sorter = [...arbetspass];
+    if (pågåendePass) {
+        sorter.push({ id: pågåendePass.id, start: pågåendePass.start, slut: now });
     }
-}
+    sorter.sort((a, b) => a.start - b.start);
+
+    sorter.forEach(p => {
+        linjaler.forEach(l => {
+            const linStart = l.start.getTime();
+            const linEnd   = linStart + 24 * 3600 * 1000;
+            const start    = Math.max(p.start.getTime(), linStart);
+            const slut     = Math.min(p.slut.getTime(), linEnd);
+
+            if (slut <= start) return;
+
+            const x = (start - linStart) * pxPerMs;
+            const w = (slut - start)     * pxPerMs;
+
+            ctx.fillStyle = "#0f0";
+            ctx.fillRect(x, l.y - 10, w, 20);
+
+            passPositions.push({ id: p.id, xStart: x, yStart: l.y - 10, bredd: w, höjd: 20 });
+
+            if (p.id === markeratPassId) {
+                ctx.strokeStyle = "red";
+                ctx.lineWidth   = 2;
+                ctx.strokeRect(x, l.y - 10, w, 20);
+
+                const durationMs = p.slut.getTime() - p.start.getTime();
+                ctx.fillStyle    = "white";
+                ctx.font         = "12px sans-serif";
+                ctx.textAlign    = "center";
+                ctx.fillText(msTillText(durationMs), x + w / 2, l.y + 30);
+            }
+        });
     });
 
-//////////////////////////////////////////////////////////////
-// PASS
-//////////////////////////////////////////////////////////////
+    vilaPositions = [];
 
-passPositions = [];
+vilor.forEach((v, index) => {
+    const vilaTid = v.slut.getTime() - v.start.getTime();
+    let färg, höjd;
 
-let sorter =
-    [...arbetspass];
+    if      (vilaTid >= 8 * 3600 * 1000) { färg = "yellow"; höjd = 10; }
+    else if (vilaTid >= 4 * 3600 * 1000) { färg = "#00f";   höjd = 8;  }
+    else if (vilaTid >= 2 * 3600 * 1000) { färg = "#88f";   höjd = 6;  }
+    else                                  { färg = "#0f0";   höjd = 4;  }
 
-if(pågåendePass){
+    linjaler.forEach(l => {
+        const linStart = l.start.getTime();
+        const linEnd   = linStart + 24 * 3600 * 1000;
 
-    sorter.push({
+        const start = Math.max(v.start.getTime(), linStart);
+        const slut  = Math.min(v.slut.getTime(), linEnd);
+        if (slut <= start) return;
 
-        id:pågåendePass.id,
-        start:pågåendePass.start,
-        slut:now
-    });
-}
+        const x = (start - linStart) * pxPerMs;
+        const w = (slut - start) * pxPerMs;
 
-sorter.sort((a,b)=>a.start-b.start);
+        ctx.fillStyle = färg;
+        ctx.fillRect(x, l.y - höjd / 2, w, höjd);
 
-sorter.forEach(p=>{
-
-    linjaler.forEach(l=>{
-
-        const linStart =
-            l.start.getTime();
-
-        const linEnd =
-            linStart +
-            24*3600*1000;
-
-        const start =
-            Math.max(
-                p.start.getTime(),
-                linStart
-            );
-
-        const slut =
-            Math.min(
-                p.slut.getTime(),
-                linEnd
-            );
-
-        if(slut <= start) return;
-
-        const x =
-            (start - linStart) *
-            pxPerMs;
-
-        const w =
-            (slut - start) *
-            pxPerMs;
-
-        //////////////////////////////////////////////////////
-        // PASS
-        //////////////////////////////////////////////////////
-
-        ctx.fillStyle = "#0f0";
-
-        ctx.fillRect(
-            x,
-            l.y - 10,
-            w,
-            20
-        );
-
-        //////////////////////////////////////////////////////
-        // SPARA POSITION
-        //////////////////////////////////////////////////////
-
-        passPositions.push({
-
-            id:p.id,
-
-            xStart:x,
-            yStart:l.y - 10,
-
-            bredd:w,
-            höjd:20
+        // ⬅️ NYTT: spara position
+        vilaPositions.push({
+            index,
+            xStart: x,
+            yStart: l.y - höjd / 2,
+            bredd: w,
+            höjd: höjd,
+            vila: v
         });
 
-        //////////////////////////////////////////////////////
-        // MARKERING
-        //////////////////////////////////////////////////////
-
-        if(p.id === markeratPassId){
-
-            ctx.strokeStyle = "red";
-
+        // ⬅️ NYTT: rita markering + tid
+        if (markeradVilaIndex === index) {
+            ctx.strokeStyle = "cyan";
             ctx.lineWidth = 2;
+            ctx.strokeRect(x, l.y - höjd / 2, w, höjd);
 
-            ctx.strokeRect(
-                x,
-                l.y - 10,
-                w,
-                20
-            );
-
-            //////////////////////////////////////////////////
-            // PASSLÄNGD
-            //////////////////////////////////////////////////
-
-            const durationMs =
-                p.slut.getTime() -
-                p.start.getTime();
-
+            const durationMs = v.slut - v.start;
             ctx.fillStyle = "white";
-
             ctx.font = "12px sans-serif";
-
             ctx.textAlign = "center";
-
-            ctx.fillText(msTillText(durationMs),
-
-                x + w/2,
-
-                l.y + 30
-            );
+            ctx.fillText(msTillText(durationMs), x + w / 2, l.y + 25);
         }
     });
 });
-//////////////////////////////////////////////////////////////
-// VILOPERIODER
-//////////////////////////////////////////////////////////////
-
-
-vilor.forEach(v=>{
-
-    const vilaTid =
-        v.slut.getTime() -
-        v.start.getTime();
-
-    let färg;
-    let höjd;
 
     //////////////////////////////////////////////////////////
-    // FÄRGER
+    // NOW LINE
     //////////////////////////////////////////////////////////
 
-   if(vilaTid < 2*3600*1000){
-    färg = "#0f0";
-    höjd = 4;
-}
-
-else if(vilaTid >= 8*3600*1000){
-
-        färg = "yellow";
-        höjd = 10;
-
-    }else if(vilaTid >= 4*3600*1000){
-
-        färg = "#00f";
-        höjd = 8;
-
-    }else if(vilaTid >= 2*3600*1000){
-
-        färg = "#88f";
-        höjd = 6;
-
-    }else{
-
-        färg = "#0f0";
-        höjd = 4;
-    }
-
-    //////////////////////////////////////////////////////////
-    // RITA VILAN
-    //////////////////////////////////////////////////////////
-
-    linjaler.forEach(l=>{
-
-        const linStart =
-            l.start.getTime();
-
-        const linEnd =
-            linStart +
-            24*3600*1000;
-
-        const start =
-            Math.max(
-                v.start.getTime(),
-                linStart
-            );
-
-        const slut =
-            Math.min(
-                v.slut.getTime(),
-                linEnd
-            );
-
-        if(slut <= start) return;
-
-        const x =
-            (start - linStart) *
-            pxPerMs;
-
-        const w =
-            (slut - start) *
-            pxPerMs;
-
-        ctx.fillStyle = färg;
-
-        ctx.fillRect(
-            x,
-            l.y - höjd/2,
-            w,
-            höjd
-        );
-    });
-});    
-//////////////////////////////////////////////////////////
-    // NU-LINJE
-    //////////////////////////////////////////////////////////
-
-    const xNow =
-        (now.getTime() - d0.getTime())
-        * pxPerMs;
+    const xNow = (now.getTime() - d0.getTime()) * pxPerMs;
 
     ctx.strokeStyle = "red";
-    ctx.lineWidth = 2;
-
+    ctx.lineWidth   = 2;
     ctx.beginPath();
-
-    ctx.moveTo(xNow,0);
-
-    ctx.lineTo(xNow,240);
-
+    ctx.moveTo(xNow, 0);
+    ctx.lineTo(xNow, 240);
     ctx.stroke();
-//////////////////////////////////////////////////////////
-    // FDP START MARKERING
+
+    //////////////////////////////////////////////////////////
+    // FDP START MARKER
     //////////////////////////////////////////////////////////
 
     const fdpStartDate = fdpState.fdpStart;
 
-    linjaler.forEach(l=>{
+    linjaler.forEach(l => {
+        const linStart = l.start.getTime();
+        const linEnd   = linStart + 24 * 3600 * 1000;
 
-        const linStart =
-            l.start.getTime();
+        if (fdpStartDate.getTime() < linStart || fdpStartDate.getTime() > linEnd) return;
 
-        const linEnd =
-            linStart +
-            24*3600*1000;
+        const x = (fdpStartDate.getTime() - linStart) * pxPerMs;
 
-        if(
-            fdpStartDate.getTime() >= linStart &&
-            fdpStartDate.getTime() <= linEnd
-        ){
+        ctx.strokeStyle = "magenta";
+        ctx.lineWidth   = 2;
+        ctx.beginPath();
+        ctx.moveTo(x, l.y - 20);
+        ctx.lineTo(x, l.y + 30);
+        ctx.stroke();
 
-            const x =
-                (fdpStartDate.getTime()-linStart)
-                * pxPerMs;
-
-            ctx.strokeStyle = "magenta";
-
-            ctx.lineWidth = 2;
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                x,
-                l.y - 20
-            );
-
-            ctx.lineTo(
-                x,
-                l.y + 30
-            );
-
-            ctx.stroke();
-
-            ctx.fillStyle = "magenta";
-
-            ctx.fillText(
-                "FDPStart",
-                x ,
-                l.y + 45
-            );
-        }
+        ctx.fillStyle = "magenta";
+        ctx.fillText("FDPStart", x, l.y + 45);
     });
-
-    
 }
 
 //////////////////////////////////////////////////////////////
 // UPDATE LOOP
 //////////////////////////////////////////////////////////////
 
-function uppdatera(){
-
+function uppdatera() {
     storleksanpassaCanvas();
-
     rita();
-
-    setTimeout(
-        uppdatera,
-        1000
-    );
+    setTimeout(uppdatera, 1000);
 }
+
 //////////////////////////////////////////////////////////////
-// KLICKA PÅ PASS
+// CLICK ON SHIFT
 //////////////////////////////////////////////////////////////
 
-canvas.addEventListener("click",e=>{
+canvas.addEventListener("click", e => {
+    const rect   = canvas.getBoundingClientRect();
+    const klickX = e.clientX - rect.left;
+    const klickY = e.clientY - rect.top;
+    let hittat   = false;
 
-    const rect =
-        canvas.getBoundingClientRect();
-
-    const klickX =
-        e.clientX - rect.left;
-
-    const klickY =
-        e.clientY - rect.top;
-
-    let hittat = false;
-
-    for(const p of passPositions){
-
-        if(
-
-            klickX >= p.xStart &&
-            klickX <= p.xStart + p.bredd &&
-
-            klickY >= p.yStart &&
-            klickY <= p.yStart + p.höjd
-        ){
-
+    for (const p of passPositions) {
+        if (
+            klickX >= p.xStart && klickX <= p.xStart + p.bredd &&
+            klickY >= p.yStart && klickY <= p.yStart + p.höjd
+        ) {
             markeratPassId = p.id;
 
-            const pass =
-                arbetspass.find(
-                    x=>x.id===p.id
-                );
-
-            if(pass){
-
-                document.getElementById("start").value =
-                    localDatetimeString(pass.start);
-
-                document.getElementById("slut").value =
-                    localDatetimeString(pass.slut);
-
-                redigerarIndex =
-                    arbetspass.findIndex(
-                        x=>x.id===p.id
-                    );
-
-                document.getElementById("btnTaBort")
-                    .disabled = false;
+            const pass = arbetspass.find(x => x.id === p.id);
+            if (pass) {
+                document.getElementById("start").value = localDatetimeString(pass.start);
+                document.getElementById("slut").value  = localDatetimeString(pass.slut);
+                redigerarIndex = arbetspass.findIndex(x => x.id === p.id);
+                document.getElementById("btnTaBort").disabled = false;
             }
 
             hittat = true;
-
             break;
         }
     }
-
-    if(!hittat){
-
-        markeratPassId = null;
-
-        redigerarIndex = -1;
-
-        document.getElementById("btnTaBort")
-            .disabled = true;
+// Kolla vilor om inget pass hittades
+if (!hittat) {
+    for (const v of vilaPositions) {
+        if (
+            klickX >= v.xStart && klickX <= v.xStart + v.bredd &&
+            klickY >= v.yStart && klickY <= v.yStart + v.höjd
+        ) {
+            markeradVilaIndex = v.index;
+            markeratPassId = null;
+            redigerarIndex = -1;
+            document.getElementById("btnTaBort").disabled = true;
+            hittat = true;
+            break;
+        }
     }
+}
+
+
+    if (!hittat) {
+    markeratPassId = null;
+    markeradVilaIndex = null;
+    redigerarIndex = -1;
+    document.getElementById("btnTaBort").disabled = true;
+}
+
 
     rita();
 });
+
 //////////////////////////////////////////////////////////////
 // INIT
 //////////////////////////////////////////////////////////////
@@ -1672,8 +863,8 @@ canvas.addEventListener("click",e=>{
 laddaFrånMinne();
 säkerställDefaultPass();
 uppdateraKnappar();
-
 uppdatera();
+
 </script>
 
 </body>
