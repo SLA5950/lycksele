@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kameravyer - Region Västerbotten</title>
+    <style>
+        /* Grundläggande mobiloptimering för iPhone */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f5f5f7; /* Ljusgrå Apple-bakgrund */
+            display: flex;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        /* 2-kolumns rutnät */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Två lika stora kolumner */
+            gap: 12px; /* Avstånd så man inte trycker fel på pekskärmen */
+            width: 100%;
+            max-width: 500px;
+        }
+
+        /* Gemensam stil för knapparna */
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 54px; /* Generös storlek för fingrar enligt iOS riktlinjer */
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.15s, transform 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Tryckeffekt för fingret */
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Kolumn 1: Kameror (Blå) */
+        .btn-link {
+            background-color: #0071e3;
+            color: #ffffff;
+        }
+        
+        .btn-link:active {
+            background-color: #005bb5;
+        }
+
+        /* Kolumn 2: Extrafunktioner (Grå) */
+        .btn-action {
+            background-color: #e8e8ed;
+            color: #1d1d1f;
+        }
+
+        .btn-action:active {
+            background-color: #d2d2d7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-container">
+        <!-- Rad 1 -->
+        <a href="http://cctv-nus.vll.se/axis-cgi/jpg/image.cgi?camera=1" target="_blank" rel="noopener noreferrer" class="btn btn-link">Kamera NUS</a>
+        <button class="btn btn-action">Knapp 1</button>
+
+        <!-- Rad 2 -->
+        <a href="http://cctv-skelas.vll.se/axis-cgi/jpg/image.cgi?camera=1" target="_blank" rel="noopener noreferrer" class="btn btn-link">Kamera Skelas</a>
+        <button class="btn btn-action">Knapp 2</button>
+
+        <!-- Rad 3 -->
+        <a href="http://cctv-lselas.vll.se/axis-cgi/jpg/image.cgi?camera=1" target="_blank" rel="noopener noreferrer" class="btn btn-link">Kamera Lselas</a>
+        <button class="btn btn-action">Knapp 3</button>
+
+        <!-- Rad 4 -->
+        <a href="http://cctv-lseflp.vll.se/axis-cgi/jpg/image.cgi?camera=1" target="_blank" rel="noopener noreferrer" class="btn btn-link">Kamera LSEFLP</a>
+        <button class="btn btn-action">Knapp 4</button>
+
+        <!-- Rad 5 (Platshållare för framtida kameror) -->
+        <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-link">Kamera 5</a>
+        <button class="btn btn-action">Knapp 5</button>
+
+        <!-- Rad 6 -->
+        <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-link">Kamera 6</a>
+        <button class="btn btn-action">Knapp 6</button>
+
+        <!-- Rad 7 -->
+        <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-link">Kamera 7</a>
+        <button class="btn btn-action">Knapp 7</button>
+
+        <!-- Rad 8 -->
+        <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-link">Kamera 8</a>
+        <button class="btn btn-action">Knapp 8</button>
+
+        <!-- Rad 9 -->
+        <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-link">Kamera 9</a>
+        <button class="btn btn-action">Knapp 9</button>
+
+        <!-- Rad 10 -->
+        <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-link">Kamera 10</a>
+        <button class="btn btn-action">Knapp 10</button>
+    </div>
+
+</body>
+</html>
