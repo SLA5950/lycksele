@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kameravyer - Region Västerbotten</title>
+
+```
+<style>
+    /* Grundläggande mobiloptimering för iPhone */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                     Roboto, Helvetica, Arial, sans-serif;
+        background-color: #f5f5f7;
+        padding: 16px;
+    }
+
+    /* =========================
+       FLIKAR
+       ========================= */
+
+    .tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto 16px auto;
+    }
+
+    .tab {
+        min-height: 50px;
+        border: none;
+        border-radius: 12px;
+        background-color: #e8e8ed;
+        color: #1d1d1f;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .tab:active {
+        transform: scale(0.97);
+    }
+
+    .tab.active {
+        background-color: #0071e3;
+        color: white;
+    }
+
+    /* =========================
+       INNEHÅLL
+       ========================= */
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    /* 2-kolumns rutnät */
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    /* Gemensam stil för knapparna */
+    .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 54px;
+        padding: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        text-align: center;
+        transition: background-color 0.15s, transform 0.1s;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Tryckeffekt */
+    .btn:active {
+        transform: scale(0.97);
+    }
+
+    /* Blå knappar */
+    .btn-link {
+        background-color: #0071e3;
+        color: #ffffff;
+    }
+
+    .btn-link:active {
+        background-color: #005bb5;
+    }
+
+    /* Grå knappar */
+    .btn-action {
+        background-color: #e8e8ed;
+        color: #1d1d1f;
+    }
+
+    .btn-action:active {
+        background-color: #d2d2d7;
+    }
+</style>
+```
+
+</head>
+
+<body>
+
+```
+<!-- =========================
+     FLIKAR
+     ========================= -->
+
+<div class="tabs">
+
+    <button class="tab active" onclick="visaFlik('Västerbotten', this)">
+        Västerbotten
+    </button>
+
+    <button class="tab" onclick="visaFlik('Norrbotten', this)">
+       Norrbotten
+    </button>
+
+</div>
+
+
+<!-- =========================
+     FLIK 1 – Västerbotten
+     ========================= -->
+
+<div id="Västerbotten" class="tab-content active">
+
+    <div class="grid-container">
+
+        <!-- Rad 1 -->
+        <a href="http://cctv-nus.vll.se/axis-cgi/jpg/image.cgi?camera=1"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Umeå NUS
+        </a>
+
+        <a href="x"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Umeå NUS2
+        </a>
+
+
+        <!-- Rad 2 -->
+        <a href="http://cctv-skelas.vll.se/axis-cgi/jpg/image.cgi?camera=1"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Skellefteå sjhus
+        </a>
+
+        <a href="x"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Umeå NUS2
+        </a>
+
+
+        <!-- Rad 3 -->
+        <a href="http://cctv-lselas.vll.se/axis-cgi/jpg/image.cgi?camera=1"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Lycksele flpl
+        </a>
+
+        <a href="http://cctv-lseflp.vll.se/axis-cgi/jpg/image.cgi?camera=1"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Lycksele Norr
+        </a>
+
+
+        <!-- Rad 4 -->
+        <a href="https://api.trafikinfo.trafikverket.se/v2/Images/data/road.infrastructure.camera/RoadConditionCamera_VViS_2433_K1_fullsize.jpg?t=2980286"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Saxnäs
+        </a>
+
+        <a href="https://api.trafikinfo.trafikverket.se/v2/Images/data/road.infrastructure.camera/RoadConditionCamera_VViS_2407_K1_fullsize.jpg?t=1788172034169"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Boliden, Bastunäs
+        </a>
+
+
+        <!-- Rad 5 -->
+        <a href="http://185.102.215.186/current/35501copyright!!/hemavan_7_live.jpg?counter=1750152302465"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Hemavan toppstugan
+        </a>
+
+        <a href="http://www.fjallflygarna.se/webcam/fjallflyg_1_640.jpg?counter=1748678684985"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Adolfström
+        </a>
+
+
+        <!-- Rad 6 -->
+        <a href="http://185.102.215.186/current/35501copyright!!/hemavan_1_live.jpg?counter=1750152412740"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Hemavan
+        </a>
+
+        <a href="https://bygdsiljumsbacken.se/topp.php"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Bygdsiljumsbacken
+        </a>
+
+
+        <!-- Rad 7 -->
+        <a href="https://www.storuman.se/webcams/tarnaby/tarnaby.jpg"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Tärnaby
+        </a>
+
+        <a href="x"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Umeå NUS2
+        </a>
+
+
+        <!-- Rad 8 -->
+        <a href="http://www.storuman.se/webcams/storuman/storuman.jpg"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Storuman
+        </a>
+
+        <a href="https://www.airviro.com/borga//webcam/latestimg.jpg?2506010721"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Borgahällen, Borgafjäll
+        </a>
+
+
+        <!-- Rad 9 -->
+        <a href="https://webcam.vaia.se/image-1280x720.jpg?dummy=1748539668617"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Sorsele
+        </a>
+
+        <a href="https://www.airviro.com/dauna//webcam/latestimg.jpg?2505302151"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Daunafjället, Kittelfjäll
+        </a>
+
+
+        <!-- Rad 10 -->
+        <a href="http://185.102.215.186/current/35501copyright!!/vilhelmina_3_live.jpg?counter=1750152454292"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Vilhelmina
+        </a>
+
+        <a href="http://185.102.215.186/current/35501copyright!!/vilhelmina_2_live.jpg?counter=1750152484429"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Vilhelmina
+        </a>
+
+
+        <!-- Rad 11 -->
+        <a href="https://storgrova.moln8.com/hotelliften.mjpg"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Kittelfjäll Hotellliften
+        </a>
+
+        <a href="https://storgrova.moln8.com/borkan.mjpg"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Kittelfjäll Borkan
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     FLIK 2 Norrbotten
+     ========================= -->
+
+<div id="Norrbotten" class="tab-content">
+
+    <div class="grid-container">
+
+        <!-- Exempelknappar – byt länkar och namn -->
+
+        <a href="x"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Knapp 1
+        </a>
+
+        <a href="x"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Knapp 2
+        </a>
+
+        <a href="x"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Knapp 3
+        </a>
+
+        <a href="x"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Knapp 4
+        </a>
+
+        <a href="x"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Knapp 5
+        </a>
+
+        <a href="x"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-link">
+            Knapp 6
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     JAVASCRIPT FÖR FLIKAR
+     ========================= -->
+
+<script>
+    function visaFlik(flikId, knapp) {
+
+        // Dölj alla flikar
+        const flikar = document.querySelectorAll(".tab-content");
+
+        flikar.forEach(function(flik) {
+            flik.classList.remove("active");
+        });
+
+        // Ta bort aktiv markering från alla flikknappar
+        const knappar = document.querySelectorAll(".tab");
+
+        knappar.forEach(function(knapp) {
+            knapp.classList.remove("active");
+        });
+
+        // Visa vald flik
+        document.getElementById(flikId).classList.add("active");
+
+        // Markera vald knapp
+        knapp.classList.add("active");
+    }
+</script>
+```
+
+</body>
+</html>
