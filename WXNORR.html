@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
@@ -98,16 +99,27 @@ body {
 </style>
 
 </head>
+
 <body>
 
 <div class="tabs">
-    <button class="tab active" onclick="visaFlik('Västerbotten', this)">
-        Västerbotten
-    </button>
 
-    <button class="tab" onclick="visaFlik('Norrbotten', this)">
-        Norrbotten
-    </button>
+
+<button 
+    class="tab active" 
+    data-flik="Västerbotten"
+    onclick="visaFlik('Västerbotten', this)">
+    Västerbotten
+</button>
+
+<button 
+    class="tab" 
+    data-flik="Norrbotten"
+    onclick="visaFlik('Norrbotten', this)">
+    Norrbotten
+</button>
+
+
 </div>
 
 <div id="Västerbotten" class="tab-content active">
@@ -120,114 +132,356 @@ body {
 
 <script>
 
-const vasterbottenKameror = [
-    { namn: "Adolfström", url: "http://www.fjallflygarna.se/webcam/fjallflyg_1_640.jpg?counter=1748678684985" },
-    { namn: "Boliden, Bastunäs", url: "https://api.trafikinfo.trafikverket.se/v2/Images/data/road.infrastructure.camera/RoadConditionCamera_VViS_2407_K1_fullsize.jpg?t=1788172034169" },
-    { namn: "Borgafjäll, Borgahällen", url: "https://www.airviro.com/borga//webcam/latestimg.jpg?2506010721" },
-    { namn: "Bygdsiljumsbacken", url: "https://bygdsiljumsbacken.se/topp.php" },
-    { namn: "Kittelfjäll, Daunafjället", url: "https://www.airviro.com/dauna//webcam/latestimg.jpg?2505302151" },
-    { namn: "Hemavan", url: "http://185.102.215.186/current/35501copyright!!/hemavan_1_live.jpg?counter=1750152412740" },
-    { namn: "Hemavan toppstugan", url: "http://185.102.215.186/current/35501copyright!!/hemavan_7_live.jpg?counter=1750152302465" },
-    { namn: "Kittelfjäll Borkan", url: "https://storgrova.moln8.com/borkan.mjpg" },
-    { namn: "Kittelfjäll Hotellliften", url: "https://storgrova.moln8.com/hotelliften.mjpg" },
-    { namn: "Lycksele Sjuhus", url: "http://cctv-lselas.vll.se/axis-cgi/jpg/image.cgi?camera=1" },
-    { namn: "Lycksele Flplats", url: "http://cctv-lseflp.vll.se/axis-cgi/jpg/image.cgi?camera=1" },
-    { namn: "Saxnäs", url: "https://api.trafikinfo.trafikverket.se/v2/Images/data/road.infrastructure.camera/RoadConditionCamera_VViS_2433_K1_fullsize.jpg?t=2980286" },
-    { namn: "Skellefteå sjhus", url: "http://cctv-skelas.vll.se/axis-cgi/jpg/image.cgi?camera=1" },
-    { namn: "Sorsele", url: "https://webcam.vaia.se/image-1280x720.jpg?dummy=1748539668617" },
-    { namn: "Storuman", url: "http://www.storuman.se/webcams/storuman/storuman.jpg" },
-    { namn: "Tärnaby", url: "https://www.storuman.se/webcams/tarnaby/tarnaby.jpg" },
-    { namn: "Umeå NUS", url: "http://cctv-nus.vll.se/axis-cgi/jpg/image.cgi?camera=1" },
-    { namn: "Vilhelmina kyrka", url: "http://185.102.215.186/current/35501copyright!!/vilhelmina_3_live.jpg?counter=1750152454292" },
-    { namn: "Vilhelmina Volgsjön", url: "http://185.102.215.186/current/35501copyright!!/vilhelmina_2_live.jpg?counter=1750152484429" },
+// ======================================================
+// VÄSTERBOTTEN
+// ======================================================
 
-    // Denna knapp är alltid fastnålad överst till vänster
+const vasterbottenKameror = [
+
+    { 
+        namn: "Adolfström", 
+        url: "http://www.fjallflygarna.se/webcam/fjallflyg_1_640.jpg?counter=1748678684985" 
+    },
+
+    { 
+        namn: "Boliden, Bastunäs", 
+        url: "https://api.trafikinfo.trafikverket.se/v2/Images/data/road.infrastructure.camera/RoadConditionCamera_VViS_2407_K1_fullsize.jpg?t=1788172034169" 
+    },
+
+    { 
+        namn: "Borgafjäll, Borgahällen", 
+        url: "https://www.airviro.com/borga//webcam/latestimg.jpg?2506010721" 
+    },
+
+    { 
+        namn: "Bygdsiljumsbacken", 
+        url: "https://bygdsiljumsbacken.se/topp.php" 
+    },
+
+    { 
+        namn: "Kittelfjäll, Daunafjället", 
+        url: "https://www.airviro.com/dauna//webcam/latestimg.jpg?2505302151" 
+    },
+
+    { 
+        namn: "Hemavan", 
+        url: "http://185.102.215.186/current/35501copyright!!/hemavan_1_live.jpg?counter=1750152412740" 
+    },
+
+    { 
+        namn: "Hemavan toppstugan", 
+        url: "http://185.102.215.186/current/35501copyright!!/hemavan_7_live.jpg?counter=1750152302465" 
+    },
+
+    { 
+        namn: "Kittelfjäll Borkan", 
+        url: "https://storgrova.moln8.com/borkan.mjpg" 
+    },
+
+    { 
+        namn: "Kittelfjäll Hotellliften", 
+        url: "https://storgrova.moln8.com/hotelliften.mjpg" 
+    },
+
+    { 
+        namn: "Lycksele Sjuhus", 
+        url: "http://cctv-lselas.vll.se/axis-cgi/jpg/image.cgi?camera=1" 
+    },
+
+    { 
+        namn: "Lycksele Flplats", 
+        url: "http://cctv-lseflp.vll.se/axis-cgi/jpg/image.cgi?camera=1" 
+    },
+
+    { 
+        namn: "Saxnäs", 
+        url: "https://api.trafikinfo.trafikverket.se/v2/Images/data/road.infrastructure.camera/RoadConditionCamera_VViS_2433_K1_fullsize.jpg?t=2980286" 
+    },
+
+    { 
+        namn: "Skellefteå sjhus", 
+        url: "http://cctv-skelas.vll.se/axis-cgi/jpg/image.cgi?camera=1" 
+    },
+
+    { 
+        namn: "Sorsele", 
+        url: "https://webcam.vaia.se/image-1280x720.jpg?dummy=1748539668617" 
+    },
+
+    { 
+        namn: "Storuman", 
+        url: "http://www.storuman.se/webcams/storuman/storuman.jpg" 
+    },
+
+    { 
+        namn: "Tärnaby", 
+        url: "https://www.storuman.se/webcams/tarnaby/tarnaby.jpg" 
+    },
+
+    { 
+        namn: "Umeå NUS", 
+        url: "http://cctv-nus.vll.se/axis-cgi/jpg/image.cgi?camera=1" 
+    },
+
+    { 
+        namn: "Vilhelmina kyrka", 
+        url: "http://185.102.215.186/current/35501copyright!!/vilhelmina_3_live.jpg?counter=1750152454292" 
+    },
+
+    { 
+        namn: "Vilhelmina Volgsjön", 
+        url: "http://185.102.215.186/current/35501copyright!!/vilhelmina_2_live.jpg?counter=1750152484429" 
+    },
+    { 
+        namn: "Arjeplog, Hornavan", 
+        url: "http://194.103.218.16/axis-cgi/jpg/image.cgi?resolution=480x360" 
+    },
+
+    { 
+        namn: "Adolfström, Tjäktsa", 
+        url: "http://www.fjallflygarna.se/webcam/fjallflyg_1_640.jpg?counter=1748678684985" 
+    },
+
+    { 
+        namn: "Vidsel, Storforsen", 
+        url: "https://ipcamlive.com/player/snapshot.php?alias=storforsen" 
+    },
+
+    { 
+        namn: "Arvidsjaur", 
+        url: "https://www.youtube.com/watch?v=Dnw_l8f9rUc" 
+    },
+
+    // Fastnålad knapp
     { 
         namn: "Karta", 
         url: "https://sla5950.github.io/lycksele/Kameraplaceringar.png", 
         fastnad: true 
     }
+
 ];
+
+
+// ======================================================
+// NORRBOTTEN
+// ======================================================
 
 const norrbottenKameror = [
-    { namn: "Riksgränsen", url: "https://www.airviro.com/riksgransen//webcam/latestimg.jpg" },
-    { namn: "Kilpisjärvi mot Norge", url: "https://weathercam.digitraffic.fi/C1453507.jpg" },
-    { namn: "Björkliden", url: "https://www.youtube.com/watch?v=EnHrZYrbboA" },
-    { namn: "Karesuando", url: "http://eurosuando.asuscomm.com:2583/ISAPI/Streaming/channels/102/httpPreview" },
-    { namn: "Kiruna Luossavaara", url: "https://proxy-3.webbkameror.se/current/XT4uWCplDKQ/1765545022155.jpg?bust=1788239522065" },
-    { namn: "Kiruna 360grader", url: "https://www.youtube.com/watch?v=Fx5ZDS0jKtU"},
-    { namn: "Abisko Aurora", url: "https://webcams.lightsoverlapland.com/viewer?camera=1" },
-    { namn: "Kebnekaise", url: "https://www.airviro.com/kebnekaise//webcam/latestimg.jpg" },
-    { namn: "Puoltsa, Nikkavägen", url: "http://www.reservoirproduction.se/destination/Images/latest.jpg" },
-    { namn: "Gällivare, Dundret", url: "https://assets2.webcam.io/w/z3ZvaP/latest_hd.jpg" },
-    { namn: "Gällivare, Dalstationen", url: "https://assets2.webcam.io/w/MwKjvM/latest_hd.jpg" },
-    { namn: "Pajala, Soltorget", url: "https://soltorget.pajala.se/jpg/image.jpg" },
-    { namn: "Kukkolaforsen", url: "https://live.kukkolaforsen.se/jpg/image.jpg" },
-    { namn: "Kalix Strandängarna", url: "https://ipcamlive.com/player/snapshot.php?alias=6709261f30171" },
-    { namn: "Arjeplog, Hornavan", url: "http://194.103.218.16/axis-cgi/jpg/image.cgi?resolution=480x360" },
-    { namn: "Adolfström, Tjäktsa", url: "http://www.fjallflygarna.se/webcam/fjallflyg_1_640.jpg?counter=1748678684985" },
-    { namn: "Vidsel, Storforsen", url: "https://ipcamlive.com/player/snapshot.php?alias=storforsen" },
-    { namn: "Vidsel, Storforsen", url: "https://ipcamlive.com/player/snapshot.php?alias=storforsen" },
-    { namn: "Arvidsjaur", url: "https://www.youtube.com/watch?v=Dnw_l8f9rUc" },
-    { namn: "Kåbdalis", url: "https://www.kabdalis.com/uploads/webcamTop.jpg"},
-    // Denna knapp är alltid fastnålad överst till vänster
+
     { 
-        namn: "Karta2", 
-        url: "https://sla5950.github.io/lycksele/KameraplaceringarNorr.png", 
+        namn: "Riksgränsen", 
+        url: "https://www.airviro.com/riksgransen//webcam/latestimg.jpg" 
+    },
+
+    { 
+        namn: "Kilpisjärvi mot Norge", 
+        url: "https://weathercam.digitraffic.fi/C1453507.jpg" 
+    },
+
+    { 
+        namn: "Björkliden", 
+        url: "https://www.youtube.com/watch?v=EnHrZYrbboA" 
+    },
+
+    { 
+        namn: "Karesuando", 
+        url: "http://eurosuando.asuscomm.com:2583/ISAPI/Streaming/channels/102/httpPreview" 
+    },
+
+    { 
+        namn: "Kiruna Luossavaara", 
+        url: "https://proxy-3.webbkameror.se/current/XT4uWCplDKQ/1765545022155.jpg?bust=1788239522065" 
+    },
+
+    { 
+        namn: "Kiruna 360grader", 
+        url: "https://www.youtube.com/watch?v=Fx5ZDS0jKtU"
+    },
+
+    { 
+        namn: "Abisko Aurora", 
+        url: "https://webcams.lightsoverlapland.com/viewer?camera=1" 
+    },
+
+    { 
+        namn: "Kebnekaise", 
+        url: "https://www.airviro.com/kebnekaise//webcam/latestimg.jpg" 
+    },
+
+    { 
+        namn: "Puoltsa, Nikkavägen", 
+        url: "http://www.reservoirproduction.se/destination/Images/latest.jpg" 
+    },
+
+    { 
+        namn: "Gällivare, Dundret", 
+        url: "https://assets2.webcam.io/w/z3ZvaP/latest_hd.jpg" 
+    },
+
+    { 
+        namn: "Gällivare, Dalstationen", 
+        url: "https://assets2.webcam.io/w/MwKjvM/latest_hd.jpg" 
+    },
+
+    { 
+        namn: "Pajala, Soltorget", 
+        url: "https://soltorget.pajala.se/jpg/image.jpg" 
+    },
+
+    { 
+        namn: "Kukkolaforsen", 
+        url: "https://live.kukkolaforsen.se/jpg/image.jpg" 
+    },
+
+    { 
+        namn: "Kalix Strandängarna", 
+        url: "https://ipcamlive.com/player/snapshot.php?alias=6709261f30171" 
+    },
+
+    { 
+        namn: "Arjeplog, Hornavan", 
+        url: "http://194.103.218.16/axis-cgi/jpg/image.cgi?resolution=480x360" 
+    },
+
+    { 
+        namn: "Adolfström, Tjäktsa", 
+        url: "http://www.fjallflygarna.se/webcam/fjallflyg_1_640.jpg?counter=1748678684985" 
+    },
+
+    { 
+        namn: "Vidsel, Storforsen", 
+        url: "https://ipcamlive.com/player/snapshot.php?alias=storforsen" 
+    },
+
+    { 
+        namn: "Skellefteå sjhus", 
+        url: "http://cctv-skelas.vll.se/axis-cgi/jpg/image.cgi?camera=1" 
+    },
+
+    { 
+        namn: "Arvidsjaur", 
+        url: "https://www.youtube.com/watch?v=Dnw_l8f9rUc" 
+    },
+
+    { 
+        namn: "Kåbdalis", 
+        url: "https://www.kabdalis.com/uploads/webcamTop.jpg"
+    },
+
+ { 
+        namn: "Umeå NUS", 
+        url: "http://cctv-nus.vll.se/axis-cgi/jpg/image.cgi?camera=1" 
+    },
+
+
+    // Fastnålad knapp
+    { 
+        namn: "Karta", 
+        url: "https://sla5950.github.io/lycksele/Karta2.png", 
         fastnad: true 
     }
+
 ];
 
 
+// ======================================================
+// SKAPA KAMERAKNAPPAR
+// ======================================================
 
 function skapaKnappar(lista, containerId) {
 
     const container = document.getElementById(containerId);
 
-    // Fastnålad knapp först, övriga knappar sorteras alfabetiskt
+    // Fastnålad knapp först.
+    // Övriga sorteras alfabetiskt.
     const sorteradLista = [...lista].sort((a, b) => {
 
-        // Om A är fastnålad ska A ligga först
         if (a.fastnad && !b.fastnad) return -1;
 
-        // Om B är fastnålad ska B ligga först
         if (!a.fastnad && b.fastnad) return 1;
 
-        // Om ingen av dem är fastnålad: sortera alfabetiskt
         return a.namn.localeCompare(b.namn, "sv");
     });
+
 
     sorteradLista.forEach(kamera => {
 
         const knapp = document.createElement("a");
 
         knapp.href = kamera.url;
+
+        // Öppna kameran i ny flik
         knapp.target = "_blank";
+
         knapp.rel = "noopener noreferrer";
+
         knapp.className = "btn btn-link";
+
         knapp.textContent = kamera.namn;
 
         container.appendChild(knapp);
+
     });
 }
 
 
-
+// ======================================================
+// BYT FLIK
+// ======================================================
 
 function visaFlik(flikId, knapp) {
 
+    // Ta bort active från alla flikar
     document.querySelectorAll(".tab-content")
         .forEach(flik => flik.classList.remove("active"));
 
     document.querySelectorAll(".tab")
         .forEach(tab => tab.classList.remove("active"));
 
-    document.getElementById(flikId).classList.add("active");
+
+    // Visa vald flik
+    document.getElementById(flikId)
+        .classList.add("active");
+
     knapp.classList.add("active");
+
+
+    // Spara vald flik
+    localStorage.setItem("senasteFlik", flikId);
 }
 
-skapaKnappar(vasterbottenKameror, "vasterbottenGrid");
-skapaKnappar(norrbottenKameror, "norrbottenGrid");
+
+// ======================================================
+// SKAPA ALLA KNAPPAR
+// ======================================================
+
+skapaKnappar(
+    vasterbottenKameror, 
+    "vasterbottenGrid"
+);
+
+skapaKnappar(
+    norrbottenKameror, 
+    "norrbottenGrid"
+);
+
+
+// ======================================================
+// ÅTERSTÄLL SENAST VALDA FLIK
+// ======================================================
+
+const sparadFlik = localStorage.getItem("senasteFlik");
+
+if (sparadFlik) {
+
+    const knapp = document.querySelector(
+        '.tab[data-flik="' + sparadFlik + '"]'
+    );
+
+    if (knapp) {
+        visaFlik(sparadFlik, knapp);
+    }
+}
 
 </script>
 
