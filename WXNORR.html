@@ -1,424 +1,235 @@
 <!DOCTYPE html>
-
 <html lang="sv">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kameravyer - Region Västerbotten</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kameravyer - Region Västerbotten</title>
 
-```
 <style>
-    /* Grundläggande mobiloptimering för iPhone */
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                     Roboto, Helvetica, Arial, sans-serif;
-        background-color: #f5f5f7;
-        padding: 16px;
-    }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f5f5f7;
+    padding: 16px;
+}
 
-    /* =========================
-       FLIKAR
-       ========================= */
+.tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto 16px auto;
+}
 
-    .tabs {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        width: 100%;
-        max-width: 500px;
-        margin: 0 auto 16px auto;
-    }
+.tab {
+    min-height: 50px;
+    border: none;
+    border-radius: 12px;
+    background-color: #e8e8ed;
+    color: #1d1d1f;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
 
-    .tab {
-        min-height: 50px;
-        border: none;
-        border-radius: 12px;
-        background-color: #e8e8ed;
-        color: #1d1d1f;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-    }
+.tab:active {
+    transform: scale(0.97);
+}
 
-    .tab:active {
-        transform: scale(0.97);
-    }
+.tab.active {
+    background-color: #00e30b;
+    color: rgb(8, 5, 5);
+}
 
-    .tab.active {
-        background-color: #0071e3;
-        color: white;
-    }
+.tab-content {
+    display: none;
+}
 
-    /* =========================
-       INNEHÅLL
-       ========================= */
+.tab-content.active {
+    display: block;
+}
 
-    .tab-content {
-        display: none;
-    }
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
 
-    .tab-content.active {
-        display: block;
-    }
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 54px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+}
 
-    /* 2-kolumns rutnät */
-    .grid-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        width: 100%;
-        max-width: 500px;
-        margin: 0 auto;
-    }
+.btn:active {
+    transform: scale(0.97);
+}
 
-    /* Gemensam stil för knapparna */
-    .btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 54px;
-        padding: 12px;
-        font-size: 15px;
-        font-weight: 600;
-        text-decoration: none;
-        border-radius: 12px;
-        border: none;
-        cursor: pointer;
-        text-align: center;
-        transition: background-color 0.15s, transform 0.1s;
-        -webkit-tap-highlight-color: transparent;
-    }
+.btn-link {
+    background-color: #0071e3;
+    color: #ffffff;
+}
 
-    /* Tryckeffekt */
-    .btn:active {
-        transform: scale(0.97);
-    }
-
-    /* Blå knappar */
-    .btn-link {
-        background-color: #0071e3;
-        color: #ffffff;
-    }
-
-    .btn-link:active {
-        background-color: #005bb5;
-    }
-
-    /* Grå knappar */
-    .btn-action {
-        background-color: #e8e8ed;
-        color: #1d1d1f;
-    }
-
-    .btn-action:active {
-        background-color: #d2d2d7;
-    }
+.btn-link:active {
+    background-color: #00b55e;
+}
 </style>
-```
 
 </head>
-
 <body>
 
-```
-<!-- =========================
-     FLIKAR
-     ========================= -->
-
 <div class="tabs">
-
     <button class="tab active" onclick="visaFlik('Västerbotten', this)">
         Västerbotten
     </button>
 
     <button class="tab" onclick="visaFlik('Norrbotten', this)">
-       Norrbotten
+        Norrbotten
     </button>
-
 </div>
-
-
-<!-- =========================
-     FLIK 1 – Västerbotten
-     ========================= -->
 
 <div id="Västerbotten" class="tab-content active">
-
-    <div class="grid-container">
-
-        <!-- Rad 1 -->
-        <a href="http://cctv-nus.vll.se/axis-cgi/jpg/image.cgi?camera=1"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Umeå NUS
-        </a>
-
-        <a href="x"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Umeå NUS2
-        </a>
-
-
-        <!-- Rad 2 -->
-        <a href="http://cctv-skelas.vll.se/axis-cgi/jpg/image.cgi?camera=1"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Skellefteå sjhus
-        </a>
-
-        <a href="x"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Umeå NUS2
-        </a>
-
-
-        <!-- Rad 3 -->
-        <a href="http://cctv-lselas.vll.se/axis-cgi/jpg/image.cgi?camera=1"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Lycksele flpl
-        </a>
-
-        <a href="http://cctv-lseflp.vll.se/axis-cgi/jpg/image.cgi?camera=1"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Lycksele Norr
-        </a>
-
-
-        <!-- Rad 4 -->
-        <a href="https://api.trafikinfo.trafikverket.se/v2/Images/data/road.infrastructure.camera/RoadConditionCamera_VViS_2433_K1_fullsize.jpg?t=2980286"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Saxnäs
-        </a>
-
-        <a href="https://api.trafikinfo.trafikverket.se/v2/Images/data/road.infrastructure.camera/RoadConditionCamera_VViS_2407_K1_fullsize.jpg?t=1788172034169"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Boliden, Bastunäs
-        </a>
-
-
-        <!-- Rad 5 -->
-        <a href="http://185.102.215.186/current/35501copyright!!/hemavan_7_live.jpg?counter=1750152302465"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Hemavan toppstugan
-        </a>
-
-        <a href="http://www.fjallflygarna.se/webcam/fjallflyg_1_640.jpg?counter=1748678684985"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Adolfström
-        </a>
-
-
-        <!-- Rad 6 -->
-        <a href="http://185.102.215.186/current/35501copyright!!/hemavan_1_live.jpg?counter=1750152412740"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Hemavan
-        </a>
-
-        <a href="https://bygdsiljumsbacken.se/topp.php"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Bygdsiljumsbacken
-        </a>
-
-
-        <!-- Rad 7 -->
-        <a href="https://www.storuman.se/webcams/tarnaby/tarnaby.jpg"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Tärnaby
-        </a>
-
-        <a href="x"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Umeå NUS2
-        </a>
-
-
-        <!-- Rad 8 -->
-        <a href="http://www.storuman.se/webcams/storuman/storuman.jpg"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Storuman
-        </a>
-
-        <a href="https://www.airviro.com/borga//webcam/latestimg.jpg?2506010721"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Borgahällen, Borgafjäll
-        </a>
-
-
-        <!-- Rad 9 -->
-        <a href="https://webcam.vaia.se/image-1280x720.jpg?dummy=1748539668617"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Sorsele
-        </a>
-
-        <a href="https://www.airviro.com/dauna//webcam/latestimg.jpg?2505302151"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Daunafjället, Kittelfjäll
-        </a>
-
-
-        <!-- Rad 10 -->
-        <a href="http://185.102.215.186/current/35501copyright!!/vilhelmina_3_live.jpg?counter=1750152454292"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Vilhelmina
-        </a>
-
-        <a href="http://185.102.215.186/current/35501copyright!!/vilhelmina_2_live.jpg?counter=1750152484429"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Vilhelmina
-        </a>
-
-
-        <!-- Rad 11 -->
-        <a href="https://storgrova.moln8.com/hotelliften.mjpg"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Kittelfjäll Hotellliften
-        </a>
-
-        <a href="https://storgrova.moln8.com/borkan.mjpg"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Kittelfjäll Borkan
-        </a>
-
-    </div>
-
+    <div class="grid-container" id="vasterbottenGrid"></div>
 </div>
-
-
-<!-- =========================
-     FLIK 2 Norrbotten
-     ========================= -->
 
 <div id="Norrbotten" class="tab-content">
-
-    <div class="grid-container">
-
-        <!-- Exempelknappar – byt länkar och namn -->
-
-        <a href="x"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Knapp 1
-        </a>
-
-        <a href="x"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Knapp 2
-        </a>
-
-        <a href="x"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Knapp 3
-        </a>
-
-        <a href="x"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Knapp 4
-        </a>
-
-        <a href="x"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Knapp 5
-        </a>
-
-        <a href="x"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-link">
-            Knapp 6
-        </a>
-
-    </div>
-
+    <div class="grid-container" id="norrbottenGrid"></div>
 </div>
 
-
-<!-- =========================
-     JAVASCRIPT FÖR FLIKAR
-     ========================= -->
-
 <script>
-    function visaFlik(flikId, knapp) {
 
-        // Dölj alla flikar
-        const flikar = document.querySelectorAll(".tab-content");
+const vasterbottenKameror = [
+    { namn: "Adolfström", url: "http://www.fjallflygarna.se/webcam/fjallflyg_1_640.jpg?counter=1748678684985" },
+    { namn: "Boliden, Bastunäs", url: "https://api.trafikinfo.trafikverket.se/v2/Images/data/road.infrastructure.camera/RoadConditionCamera_VViS_2407_K1_fullsize.jpg?t=1788172034169" },
+    { namn: "Borgafjäll, Borgahällen", url: "https://www.airviro.com/borga//webcam/latestimg.jpg?2506010721" },
+    { namn: "Bygdsiljumsbacken", url: "https://bygdsiljumsbacken.se/topp.php" },
+    { namn: "Kittelfjäll, Daunafjället", url: "https://www.airviro.com/dauna//webcam/latestimg.jpg?2505302151" },
+    { namn: "Hemavan", url: "http://185.102.215.186/current/35501copyright!!/hemavan_1_live.jpg?counter=1750152412740" },
+    { namn: "Hemavan toppstugan", url: "http://185.102.215.186/current/35501copyright!!/hemavan_7_live.jpg?counter=1750152302465" },
+    { namn: "Kittelfjäll Borkan", url: "https://storgrova.moln8.com/borkan.mjpg" },
+    { namn: "Kittelfjäll Hotellliften", url: "https://storgrova.moln8.com/hotelliften.mjpg" },
+    { namn: "Lycksele Sjuhus", url: "http://cctv-lselas.vll.se/axis-cgi/jpg/image.cgi?camera=1" },
+    { namn: "Lycksele Flplats", url: "http://cctv-lseflp.vll.se/axis-cgi/jpg/image.cgi?camera=1" },
+    { namn: "Saxnäs", url: "https://api.trafikinfo.trafikverket.se/v2/Images/data/road.infrastructure.camera/RoadConditionCamera_VViS_2433_K1_fullsize.jpg?t=2980286" },
+    { namn: "Skellefteå sjhus", url: "http://cctv-skelas.vll.se/axis-cgi/jpg/image.cgi?camera=1" },
+    { namn: "Sorsele", url: "https://webcam.vaia.se/image-1280x720.jpg?dummy=1748539668617" },
+    { namn: "Storuman", url: "http://www.storuman.se/webcams/storuman/storuman.jpg" },
+    { namn: "Tärnaby", url: "https://www.storuman.se/webcams/tarnaby/tarnaby.jpg" },
+    { namn: "Umeå NUS", url: "http://cctv-nus.vll.se/axis-cgi/jpg/image.cgi?camera=1" },
+    { namn: "Vilhelmina kyrka", url: "http://185.102.215.186/current/35501copyright!!/vilhelmina_3_live.jpg?counter=1750152454292" },
+    { namn: "Vilhelmina Volgsjön", url: "http://185.102.215.186/current/35501copyright!!/vilhelmina_2_live.jpg?counter=1750152484429" },
 
-        flikar.forEach(function(flik) {
-            flik.classList.remove("active");
-        });
-
-        // Ta bort aktiv markering från alla flikknappar
-        const knappar = document.querySelectorAll(".tab");
-
-        knappar.forEach(function(knapp) {
-            knapp.classList.remove("active");
-        });
-
-        // Visa vald flik
-        document.getElementById(flikId).classList.add("active");
-
-        // Markera vald knapp
-        knapp.classList.add("active");
+    // Denna knapp är alltid fastnålad överst till vänster
+    { 
+        namn: "Karta", 
+        url: "https://sla5950.github.io/lycksele/Kameraplaceringar.png", 
+        fastnad: true 
     }
+];
+
+const norrbottenKameror = [
+    { namn: "Riksgränsen", url: "https://www.airviro.com/riksgransen//webcam/latestimg.jpg" },
+    { namn: "Kilpisjärvi mot Norge", url: "https://weathercam.digitraffic.fi/C1453507.jpg" },
+    { namn: "Björkliden", url: "https://www.youtube.com/watch?v=EnHrZYrbboA" },
+    { namn: "Karesuando", url: "http://eurosuando.asuscomm.com:2583/ISAPI/Streaming/channels/102/httpPreview" },
+    { namn: "Kiruna Luossavaara", url: "https://proxy-3.webbkameror.se/current/XT4uWCplDKQ/1765545022155.jpg?bust=1788239522065" },
+    { namn: "Kiruna 360grader", url: "https://www.youtube.com/watch?v=Fx5ZDS0jKtU"},
+    { namn: "Abisko Aurora", url: "https://webcams.lightsoverlapland.com/viewer?camera=1" },
+    { namn: "Kebnekaise", url: "https://www.airviro.com/kebnekaise//webcam/latestimg.jpg" },
+    { namn: "Puoltsa, Nikkavägen", url: "http://www.reservoirproduction.se/destination/Images/latest.jpg" },
+    { namn: "Gällivare, Dundret", url: "https://assets2.webcam.io/w/z3ZvaP/latest_hd.jpg" },
+    { namn: "Gällivare, Dalstationen", url: "https://assets2.webcam.io/w/MwKjvM/latest_hd.jpg" },
+    { namn: "Pajala, Soltorget", url: "https://soltorget.pajala.se/jpg/image.jpg" },
+    { namn: "Kukkolaforsen", url: "https://live.kukkolaforsen.se/jpg/image.jpg" },
+    { namn: "Kalix Strandängarna", url: "https://ipcamlive.com/player/snapshot.php?alias=6709261f30171" },
+    { namn: "Arjeplog, Hornavan", url: "http://194.103.218.16/axis-cgi/jpg/image.cgi?resolution=480x360" },
+    { namn: "Adolfström, Tjäktsa", url: "http://www.fjallflygarna.se/webcam/fjallflyg_1_640.jpg?counter=1748678684985" },
+    { namn: "Vidsel, Storforsen", url: "https://ipcamlive.com/player/snapshot.php?alias=storforsen" },
+    { namn: "Vidsel, Storforsen", url: "https://ipcamlive.com/player/snapshot.php?alias=storforsen" },
+    { namn: "Arvidsjaur", url: "https://www.youtube.com/watch?v=Dnw_l8f9rUc" },
+    { namn: "Kåbdalis", url: "https://www.kabdalis.com/uploads/webcamTop.jpg"},
+    // Denna knapp är alltid fastnålad överst till vänster
+    { 
+        namn: "Karta2", 
+        url: "https://sla5950.github.io/lycksele/KameraplaceringarNorr.png", 
+        fastnad: true 
+    }
+];
+
+
+
+function skapaKnappar(lista, containerId) {
+
+    const container = document.getElementById(containerId);
+
+    // Fastnålad knapp först, övriga knappar sorteras alfabetiskt
+    const sorteradLista = [...lista].sort((a, b) => {
+
+        // Om A är fastnålad ska A ligga först
+        if (a.fastnad && !b.fastnad) return -1;
+
+        // Om B är fastnålad ska B ligga först
+        if (!a.fastnad && b.fastnad) return 1;
+
+        // Om ingen av dem är fastnålad: sortera alfabetiskt
+        return a.namn.localeCompare(b.namn, "sv");
+    });
+
+    sorteradLista.forEach(kamera => {
+
+        const knapp = document.createElement("a");
+
+        knapp.href = kamera.url;
+        knapp.target = "_blank";
+        knapp.rel = "noopener noreferrer";
+        knapp.className = "btn btn-link";
+        knapp.textContent = kamera.namn;
+
+        container.appendChild(knapp);
+    });
+}
+
+
+
+
+function visaFlik(flikId, knapp) {
+
+    document.querySelectorAll(".tab-content")
+        .forEach(flik => flik.classList.remove("active"));
+
+    document.querySelectorAll(".tab")
+        .forEach(tab => tab.classList.remove("active"));
+
+    document.getElementById(flikId).classList.add("active");
+    knapp.classList.add("active");
+}
+
+skapaKnappar(vasterbottenKameror, "vasterbottenGrid");
+skapaKnappar(norrbottenKameror, "norrbottenGrid");
+
 </script>
-```
 
 </body>
 </html>
