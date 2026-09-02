@@ -22,7 +22,7 @@ body {
 
 .tabs {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
     width: 100%;
     max-width: 500px;
@@ -119,6 +119,12 @@ body {
     Norrbotten
 </button>
 
+<button 
+    class="tab" 
+    data-flik="AWOS"
+    onclick="visaFlik('AWOS', this)">
+    AWOS
+</button>
 
 </div>
 
@@ -128,6 +134,10 @@ body {
 
 <div id="Norrbotten" class="tab-content">
     <div class="grid-container" id="norrbottenGrid"></div>
+</div>
+
+<div id="AWOS" class="tab-content">
+    <div class="grid-container" id="awosGrid"></div>
 </div>
 
 <script>
@@ -324,7 +334,7 @@ const norrbottenKameror = [
 
     { 
         namn: "Pajala, Soltorget", 
-        url: "https://soltorget.pajala.se/camera/index.html#/video" 
+        url: "https://soltorget.pajala.se/jpg/image.jpg?camera=1&size=1" 
     },
 
     { 
@@ -384,6 +394,58 @@ const norrbottenKameror = [
         fastnad: true 
     }
 
+];
+
+
+// ======================================================
+// AWOS
+// ======================================================
+
+const awosStationer = [
+    {
+        namn: "Lycksele ESNL",
+        url: "https://wx.awos.se/?siteId=ESNL"
+    },
+    {
+        namn: "Gällivare ESNG",
+        url: "https://wx.awos.se/?siteId=ESNG"
+    },
+    {
+        namn: "Pajala ESUP",
+        url: "https://wx.awos.se/?siteId=ESUP"
+    },
+    {
+        namn: "Hemavan ESUT",
+        url: "https://wx.awos.se/?siteId=ESUT"
+    },
+    {
+        namn: "Arvidsjaur ESNX",
+        url: "https://wx.awos.se/?siteId=ESNX"
+    },
+     {
+        namn: "Mora ESKM",
+        url: "https://wx.awos.se/?siteId=ESKM"
+    },
+     {
+        namn: "Sveg ESND",
+        url: "https://wx.awos.se/?siteId=ESND"
+    },
+     {
+        namn: "Karlstad ESOK",
+        url: "https://wx.awos.se/?siteId=ESOK"
+    },
+    {
+       namn: "Skellefteå ESNS",
+        url: "https://wx.awos.se/?siteId=ESNS"
+    },
+     {
+       namn: "Kramfors ESNK",
+        url: "https://wx.awos.se/?siteId=ESNK"
+    },
+    {
+        namn: "Vilhelmina ESNV",
+        url: "https://wx.awos.se/?siteId=ESNV"
+    }
 ];
 
 
@@ -466,6 +528,11 @@ skapaKnappar(
 skapaKnappar(
     norrbottenKameror, 
     "norrbottenGrid"
+);
+
+skapaKnappar(
+    awosStationer,
+    "awosGrid"
 );
 
 
