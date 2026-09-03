@@ -84,6 +84,7 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
+
 .btn:active {
     transform: scale(0.97);
 }
@@ -95,6 +96,14 @@ body {
 
 .btn-link:active {
     background-color: #00b55e;
+}
+.metar-btn {
+    background-color: orange !important;
+    color: black !important;
+}
+
+.metar-btn:active {
+    background-color: darkorange !important;
 }
 </style>
 
@@ -443,9 +452,14 @@ const awosStationer = [
         url: "https://wx.awos.se/?siteId=ESNK"
     },
     {
+       namn: "METAR SWE",
+        url: "https://www.aro.lfv.se/Links/Link/ViewLink?TorLinkId=314&type=MET"
+    },
+    {
         namn: "Vilhelmina ESNV",
         url: "https://wx.awos.se/?siteId=ESNV"
     }
+
 ];
 
 
@@ -481,12 +495,16 @@ function skapaKnappar(lista, containerId) {
         knapp.rel = "noopener noreferrer";
 
         knapp.className = "btn btn-link";
+        if (kamera.namn === "METAR SWE") {
+
+        knapp.classList.add("metar-btn");}
 
         knapp.textContent = kamera.namn;
 
         container.appendChild(knapp);
 
     });
+    
 }
 
 
