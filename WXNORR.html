@@ -104,6 +104,24 @@ body {
 
 .metar-btn:active {
     background-color: darkorange !important;
+
+}.smhi-radar-btn {
+    background-color:  orange !important;
+    color: black !important;
+}
+
+.smhi-radar-btn {
+    background-color: darkorange !important;
+}
+
+.karta-btn {
+    background-color:  lightgreen !important;
+    color: black !important;
+}
+
+.karta-btn {
+    background-color: 
+    lightgreen !important;
 }
 </style>
 
@@ -199,12 +217,12 @@ const vasterbottenKameror = [
     },
 
     { 
-        namn: "Lycksele Sjuhus", 
+        namn: "Lycksele Sjukhus Norr", 
         url: "http://cctv-lselas.vll.se/axis-cgi/jpg/image.cgi?camera=1" 
     },
 
     { 
-        namn: "Lycksele Flplats", 
+        namn: "Lycksele Flygplats", 
         url: "http://cctv-lseflp.vll.se/axis-cgi/jpg/image.cgi?camera=1" 
     },
 
@@ -214,7 +232,7 @@ const vasterbottenKameror = [
     },
 
     { 
-        namn: "Skellefteå sjhus", 
+        namn: "Skellefteå sjukhus", 
         url: "http://cctv-skelas.vll.se/axis-cgi/jpg/image.cgi?camera=1" 
     },
 
@@ -244,7 +262,7 @@ const vasterbottenKameror = [
     },
 
     { 
-        namn: "Vilhelmina Volgsjön", 
+        namn: "Vilhelmina, Volgsjön", 
         url: "http://185.102.215.186/current/35501copyright!!/vilhelmina_2_live.jpg?counter=1750152484429" 
     },
     { 
@@ -452,8 +470,14 @@ const awosStationer = [
         url: "https://wx.awos.se/?siteId=ESNK"
     },
     {
-       namn: "METAR SWE",
-        url: "https://www.aro.lfv.se/Links/Link/ViewLink?TorLinkId=314&type=MET"
+        namn: "METAR SWE",
+        url: "https://www.aro.lfv.se/Links/Link/ViewLink?TorLinkId=314&type=MET",
+        fastnad: true
+    },
+    {
+        namn: "SMHI radar",
+        url: "https://portaler.smhi.se/radar/q/nordics/location/Lycksele/2693347",
+        fastnad: true
     },
     {
         namn: "Vilhelmina ESNV",
@@ -496,8 +520,15 @@ function skapaKnappar(lista, containerId) {
 
         knapp.className = "btn btn-link";
         if (kamera.namn === "METAR SWE") {
+            knapp.classList.add("metar-btn");
+        }
 
-        knapp.classList.add("metar-btn");}
+        if (kamera.namn === "SMHI radar") {
+            knapp.classList.add("smhi-radar-btn");
+        }
+        if (kamera.namn === "Karta") {
+            knapp.classList.add("karta-btn");
+        }
 
         knapp.textContent = kamera.namn;
 
