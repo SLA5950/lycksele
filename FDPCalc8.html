@@ -38,6 +38,11 @@
         font-weight: bold;
     }
 
+    #status.fdp-over-15 {
+    font-size: 2em;
+    color: red;
+}
+
     #fdpResult {
         margin-top: 8px;
         font-weight: bold;
@@ -588,33 +593,49 @@ function rita() {
     const fdpState        = beräknaFDP(now, allaPass);
     const { vilor, duty } = fdpState;
     const MAX_FDP         = 15 * 3600 * 1000;
-    const arbetstid       = fdpState.arbetstidMs;
-    const kvarMs          = MAX_FDP - arbetstid;
+const arbetstid       = fdpState.arbetstidMs;
+const kvarMs          = MAX_FDP - arbetstid;
 
-    const tid15h = kvarMs >= 0
-        ? new Date(now.getTime() + kvarMs)
-        : new Date(fdpState.fdpStart.getTime() + MAX_FDP);
+// När FDP når 15 h eller mer visas endast den löpande
+// summeringen av FDP duty. Summeringen fortsätter även över 15 h.
+const status = document.getElementById("status");
+
+if (arbetstid >= MAX_FDP) {
+    status.textContent =
+        `FDP duty ${msTillText(arbetstid)}`;
+    status.classList.add("fdp-over-15");
+} else {
+    status.classList.remove("fdp-over-15");
+
+    const tid15h = new Date(now.getTime() + kvarMs);
 
     const hh15    = tid15h.getHours().toString().padStart(2, "0");
     const mm15    = tid15h.getMinutes().toString().padStart(2, "0");
     const datum15 = (tid15h.getMonth() + 1).toString().padStart(2, "0") + "-" +
                     tid15h.getDate().toString().padStart(2, "0");
 
-    document.getElementById("status").textContent = kvarMs >= 0
-        ? `FDP duty ${msTillText(arbetstid)}, 15h nås: ${datum15} ${hh15}:${mm15}`
-        : `FDP duty ${msTillText(arbetstid)} (15h uppnåddes: ${datum15} ${hh15}:${mm15})`;
-
+    status.textContent =
+        `FDP duty ${msTillText(arbetstid)}, 15h nås: ${datum15} ${hh15}:${mm15}`;
+} 
     //////////////////////////////////////////////////////////
     // REST BREACH TIME
     //////////////////////////////////////////////////////////
 
+   
+
+if (arbetstid < MAX_FDP) {
     const brottTid   = hittaVilobrottTid(now, allaPass);
     const hh         = brottTid.getHours().toString().padStart(2, "0");
     const mm         = brottTid.getMinutes().toString().padStart(2, "0");
     const datumBrott = (brottTid.getMonth() + 1).toString().padStart(2, "0") + "-" +
                        brottTid.getDate().toString().padStart(2, "0");
 
-    skrivFDPResultat(`Ingen 8h vila (med 4h block) från: ${datumBrott} ${hh}:${mm}`);
+    skrivFDPResultat(
+        `Ingen 8h vila (med 4h block) från: ${datumBrott} ${hh}:${mm}`
+    );
+} else {
+    skrivFDPResultat("");
+}
 
     //////////////////////////////////////////////////////////
     // TIME RULERS
